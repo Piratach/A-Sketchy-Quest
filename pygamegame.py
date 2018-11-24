@@ -7,10 +7,11 @@ created by Lukas Peraza
  for 15-112 F15 Pygame Optional Lecture, 11/11/15
 '''
 
+size = width, height = 1024, 768
+
 black = 0, 0, 0
 white = 255, 255, 255
 gravity = 8
-
 
 class CharSprites:
 
@@ -85,6 +86,8 @@ class PygameGame(object):
 
             # jump!
             if self.mainChar.jumpState:  # while jumping
+                if self.mainChar.tempWeapon == []:
+                    self.mainChar.tempWeapon = self.mainChar.weapon
                 self.mainChar.rect.top -= self.mainChar.velocity
                 if self.mainChar.equipped:
                     self.mainChar.weapon = [(self.mainChar.weapon[0][0],
@@ -94,6 +97,12 @@ class PygameGame(object):
                 self.mainChar.velocity -= self.mainChar.gravity
                 if self.mainChar.rect.top >= 470:
                     self.mainChar.rect.top = 470  # in case character goes above 470
+                    if self.mainChar.equipped:
+                        self.mainChar.weapon = [(self.mainChar.weapon[0][0],
+                                                 self.mainChar.tempWeapon[0][1]),
+                                                (self.mainChar.weapon[0][0] + self.stickLen,
+                                                 self.mainChar.weapon[0][1])]
+                    self.mainChar.tempWeapon = []
                     self.mainChar.jumpState = False
 
             # attack!
@@ -111,6 +120,66 @@ class PygameGame(object):
                                             (self.mainChar.weapon[0][0] + self.stickLen * math.cos(0),
                                              self.mainChar.weapon[0][1] + self.stickLen * math.sin(0))]
                     self.mainChar.attackState = False
+
+            # hold key to move continuously
+            # https://stackoverflow.com/questions/9961563/how-can-i-make-a-sprite-move-when-key-is-held-down
+            if self.gameState == "game":
+                currKeys = pygame.key.get_pressed()
+                print(self.scrollSpeed)
+                if currKeys[pygame.K_d]:
+                    #  add stuff for when he's halfway over only
+                    if self.scrollX == 0:
+                        if self.mainChar.rect.left + self.mainChar.width / 2 + self.scrollSpeed >= width / 2:
+                            self.mainChar.velocityX = 0
+                            self.scrollSpeed = 10
+                        else:
+                            self.mainChar.velocityX = 10
+                            self.scrollSpeed = 0
+                    elif self.scrollX == 12026 - 1024:
+                        self.scrollSpeed = 0
+                        self.mainChar.velocityX = 10
+                    self.scrollX += self.scrollSpeed
+                    self.mainChar.moveRight()
+                    # check if there's a stick
+                    if len(self.stickPoints) == 2:
+                        self.stickPoints = [(self.stickPoints[0][0] - self.scrollSpeed,
+                                             self.stickPoints[0][1]),
+                                            (self.stickPoints[1][0] - self.scrollSpeed,
+                                             self.stickPoints[1][1])]
+                    # check if there's a bomb
+                    if self.bomb.bombPoints != (0, 0):
+                        self.bomb.bombPoints = (self.bomb.bombPoints[0] - self.scrollSpeed,
+                                                self.bomb.bombPoints[1])
+
+                elif currKeys[pygame.K_a]:
+                    #  when it's at the end, nothing happens
+                    if self.scrollX == 0:
+                        self.mainChar.velocityX = 10
+                        self.scrollSpeed = 0
+                    elif self.scrollX < 0:
+                        self.scrollX = 0
+                        self.scrollSpeed = 0
+                        self.mainChar.velocityX = 10
+                    elif self.scrollX == 12026 - 1024:
+                        self.scrollSpeed = 0
+                        self.mainChar.velocityX = 10
+                    else:
+                        if self.mainChar.rect.left + self.mainChar.width / 2 + self.scrollSpeed > width / 2:
+                            self.scrollSpeed = 10
+                        elif self.mainChar.rect.left - self.mainChar.width / 2 - self.scrollSpeed < width / 2:
+                            self.scrollSpeed = -10
+                    self.scrollX -= self.scrollSpeed
+                    self.mainChar.moveLeft()
+                    # check if there's a stick
+                    if len(self.stickPoints) == 2:
+                        self.stickPoints = [(self.stickPoints[0][0] + self.scrollSpeed,
+                                             self.stickPoints[0][1]),
+                                            (self.stickPoints[1][0] + self.scrollSpeed,
+                                             self.stickPoints[1][1])]
+                    # check if there's a bomb
+                    if self.bomb.bombPoints != (0, 0):
+                        self.bomb.bombPoints = (self.bomb.bombPoints[0] + self.scrollSpeed,
+                                                self.bomb.bombPoints[1])
 
             for event in pygame.event.get():
                 if pygame.mouse.get_pressed()[0] == 1:
