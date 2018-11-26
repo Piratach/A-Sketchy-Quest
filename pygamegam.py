@@ -12,7 +12,6 @@ size = width, height = 1024, 768
 black = 0, 0, 0
 white = 255, 255, 255
 gravity = 8
-allMonsters = pygame.sprite.Group()
 
 class CharSprites:
 
@@ -95,14 +94,28 @@ class PygameGame(object):
                                              self.mainChar.weapon[0][1] - self.mainChar.velocity),
                                             (self.mainChar.weapon[1][0],
                                              self.mainChar.weapon[1][1] - self.mainChar.velocity)]
+                    self.mainChar.weaponRight = [(self.mainChar.weaponRight[0][0],
+                                                  self.mainChar.weaponRight[0][1] - self.mainChar.velocity),
+                                                 (self.mainChar.weaponRight[1][0],
+                                                  self.mainChar.weaponRight[1][1] - self.mainChar.velocity)]
+                    self.mainChar.weaponLeft = [(self.mainChar.weaponLeft[0][0],
+                                                 self.mainChar.weaponLeft[0][1] - self.mainChar.velocity),
+                                                (self.mainChar.weaponLeft[1][0],
+                                                 self.mainChar.weaponLeft[1][1] - self.mainChar.velocity)]
                 self.mainChar.velocity -= self.mainChar.gravity
                 if self.mainChar.rect.top >= 465:
                     self.mainChar.rect.top = 465  # in case character goes above 465
                     if self.mainChar.equipped:
-                        self.mainChar.weapon = [(self.mainChar.weapon[0][0],
-                                                 self.mainChar.tempWeapon[0][1]),
-                                                (self.mainChar.weapon[0][0] + self.stickLen,
-                                                 self.mainChar.weapon[0][1])]
+                        if self.mainChar.right:
+                            self.mainChar.weapon = [(self.mainChar.weapon[0][0],
+                                                     self.mainChar.tempWeapon[0][1]),
+                                                    (self.mainChar.weapon[0][0] + self.stickLen,
+                                                     self.mainChar.weapon[0][1])]
+                        elif self.mainChar.left:
+                            self.mainChar.weapon = [(self.mainChar.weapon[0][0],
+                                                     self.mainChar.tempWeapon[0][1]),
+                                                    (self.mainChar.weapon[0][0] - self.stickLen,
+                                                     self.mainChar.weapon[0][1])]
                     self.mainChar.tempWeapon = []
                     self.mainChar.jumpState = False
 
@@ -111,27 +124,30 @@ class PygameGame(object):
             if self.gameState == "game":
                 currKeys = pygame.key.get_pressed()
                 if currKeys[pygame.K_d]:
-                    #  add stuff for when he's halfway over only
-                    if self.scrollX == 0:
-                        if self.mainChar.tempRect + self.mainChar.width / 2 + self.scrollSpeed >= width / 2:
-                            self.scrollSpeed = 10
-                        else:
-                            self.scrollSpeed = 0
-                    elif self.scrollX >= self.gameScreenLen - self.screenWidth:
-                        self.scrollX = self.gameScreenLen - self.screenWidth
-                        self.scrollSpeed = 0
-                    self.scrollX += self.scrollSpeed
                     self.mainChar.moveRight()
-                    # check if there's a stick
-                    if len(self.stick.stickPoints) == 2:
-                        self.stick.stickPoints = [(self.stick.stickPoints[0][0] - self.scrollSpeed,
-                                                   self.stick.stickPoints[0][1]),
-                                                  (self.stick.stickPoints[1][0] - self.scrollSpeed,
-                                                   self.stick.stickPoints[1][1])]
-                    # check if there's a bomb
-                    if self.bomb.bombPoints != (0, 0):
-                        self.bomb.bombPoints = (self.bomb.bombPoints[0] - self.scrollSpeed,
-                                                self.bomb.bombPoints[1])
+                    #  add stuff for when he's halfway over only
+                    if not self.mainChar.blocked:
+                        if self.scrollX == 0:
+                            if self.mainChar.tempRect + self.mainChar.width / 2 + self.scrollSpeed >= width / 2:
+                                self.scrollSpeed = 15
+                            else:
+                                self.scrollSpeed = 0
+                        elif self.scrollX >= self.gameScreenLen - self.screenWidth:
+                            self.scrollX = self.gameScreenLen - self.screenWidth
+                            self.scrollSpeed = 0
+                        self.scrollX += self.scrollSpeed
+                        # check if there's a stick
+                        if len(self.stick.stickPoints) == 2:
+                            self.stick.stickPoints = [(self.stick.stickPoints[0][0] - self.scrollSpeed,
+                                                       self.stick.stickPoints[0][1]),
+                                                      (self.stick.stickPoints[1][0] - self.scrollSpeed,
+                                                       self.stick.stickPoints[1][1])]
+                        # check if there's a bomb
+                        if self.bomb.bombPoints != (0, 0):
+                            self.bomb.bombPoints = (self.bomb.bombPoints[0] - self.scrollSpeed,
+                                                    self.bomb.bombPoints[1])
+                        if self.exploded:
+                            self.explosionPoint = (self.explosionPoint[0] - self.scrollSpeed, self.explosionPoint[1])
 
                 elif currKeys[pygame.K_a]:
                     #  when it's at the end, nothing happens
@@ -143,13 +159,13 @@ class PygameGame(object):
                     elif self.scrollX >= self.gameScreenLen - self.screenWidth:
                         if self.mainChar.tempRect + self.mainChar.width / 2 + self.scrollSpeed <= 517.5:
                             self.scrollX = self.gameScreenLen - self.screenWidth
-                            self.scrollSpeed = 10
+                            self.scrollSpeed = 15
                         else:
                             self.scrollX = self.gameScreenLen - self.screenWidth
                             self.scrollSpeed = 0
                     else:
                         if self.mainChar.tempRect + self.mainChar.width / 2 + self.scrollSpeed > width / 2:
-                            self.scrollSpeed = 10
+                            self.scrollSpeed = 15
                     self.scrollX -= self.scrollSpeed
                     self.mainChar.moveLeft()
                     # check if there's a stick

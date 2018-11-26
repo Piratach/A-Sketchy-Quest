@@ -1,12 +1,13 @@
 import pygame, math
 
 from pygamegam import PygameGame
-from charSprites import CharSprites, Weapon, RedBlob
+from charSprites import CharSprites, Weapon, RedBlob, Obstacles
 from SketchedObjects import Stick, Bomb
 
 size = width, height = 1024, 768
 screen = pygame.display.set_mode(size)  # my surface
 allMonsters = pygame.sprite.Group()
+allObstacles = pygame.sprite.Group()
 
 black = 0, 0, 0
 white = 255, 255, 255
@@ -55,10 +56,13 @@ class SketchyQuest(PygameGame):
         self.fps = 50
         self.timerCalls = 0
         self.maxDistance = 0
+
+        # stage
         self.tempPoints = []  # shows sketch
         self.scrollX = 0
         self.scrollSpeed = 0
-        self.yes = 1
+        self.rubble = Obstacles("rubble.png", (11000, 210))
+        allObstacles.add(self.rubble)
 
         # main character
         self.ground = 465  # we will work on ground/platforming
@@ -86,7 +90,10 @@ class SketchyQuest(PygameGame):
         self.stick = Stick(self.stickPoints, self.stickLen, self.stickFallen)
 
         # bombs
-        self.bomb = Bomb((0, 0), (0, 0), 1)  # initializing
+        self.bomb = Bomb((0, 0), (0, 0), (0, 0), 1, 1)  # initializing
+        self.exploded = False
+        self.explosionDelay = 0
+        self.explosionPoint = self.bomb.bombPoints
 
         # states
         self.gameState = "start"  # starts at the title state
@@ -104,12 +111,17 @@ class SketchyQuest(PygameGame):
 
         # game states
         self.gameScreen = pygame.image.load("finalStage.png")
-        self.gameScreenRect = screen.get_rect()
+        self.gameScreenRect = self.gameScreen.get_rect()
         self.gameScreenLen = 12026
+
+        # game over state
+        self.gameOverScreen = pygame.image.load("Game Over!!.png")
+        self.gameOverScreenRect = self.gameOverScreen.get_rect()
 
     def mousePressed(self, x, y):
         # no mousePressed is needed for title screen
         if self.gameState == "game":
+            print((x, y))
             self.tempPoints += [(x, y)]
 
     def mouseReleased(self):
@@ -122,8 +134,11 @@ class SketchyQuest(PygameGame):
                         centreY = isCircle(self.tempPoints)[1][1]
                         bombPoints = (centreX, centreY)
                         radius = 40
+                        explosionRadius = 200
                         self.tempPoints = []
-                        self.bomb = Bomb((centreX - radius, centreY - radius), bombPoints, radius)
+                        self.bomb = Bomb((centreX - radius, centreY - radius), bombPoints,
+                                         (bombPoints[0] + self.scrollX, bombPoints[1]),
+                                         radius, explosionRadius)
                         self.bomb.fallen = False
                         self.bomb.fuse = 0
                     # sticks
@@ -137,6 +152,8 @@ class SketchyQuest(PygameGame):
                         if self.mainChar.equipped:
                             self.mainChar.equipped = False
                             self.mainChar.weapon = []
+                            self.mainChar.weaponLeft = []
+                            self.mainChar.weaponRight = []
 
                 except:
                     pass
@@ -170,23 +187,18 @@ class SketchyQuest(PygameGame):
         # for the game screen
         elif self.gameState == "game":
             #  move left and right has been implemented in the run function
-            if currKey == "space":
+            if currKey == "d":
+                self.mainChar.weapon = self.mainChar.weaponRight
+            elif currKey == "a":
+                self.mainChar.weapon = self.mainChar.weaponLeft
+            elif currKey == "space":
                 self.mainChar.jump()
             elif currKey == "w":  # equip sticks
                 # can only equip if near and stick has fallen
                 if len(self.stick.stickPoints) == 2 and \
                         abs(self.mainChar.tempRect - self.stick.stickPoints[0][0]) <= 200 and self.stick.fallen:
-                    diffX = self.stick.stickPoints[1][0] - self.stick.stickPoints[0][0]
-                    diffY = self.stick.stickPoints[1][1] - self.stick.stickPoints[0][1]
-                    self.mainChar.weapon = [(self.mainChar.tempRect+5,
-                                             self.mainChar.rect.top+100),
-                                            (self.mainChar.tempRect+5 + diffX,
-                                             self.mainChar.rect.top+100 + diffY)]
-                    self.mainChar.equipped = True
-                    self.mainChar.stickLen = self.stick.stickLen
+                    self.mainChar.equip(self.stick)
                     self.stick = Stick([], 0, False)
-            elif currKey == "q":
-                self.yes = 0
 
             # equipped state
             if self.mainChar.equipped:
@@ -197,15 +209,22 @@ class SketchyQuest(PygameGame):
                     self.mainChar.attack(allMonsters)
 
     def timerFired(self, dt):
-        self.timerCalls += 1
-        if self.bomb.fallen:
-            self.bomb.fuse += 1  # start counting after bomb has fallen
-            if self.bomb.fuse % 80 == 0:
-                self.bomb.bombPoints = (0, 0)
-                self.bomb.fuse = 0
-                self.bomb.Fallen = False
-        if self.timerCalls % 10:
+        if self.gameState == "game":
+            self.timerCalls += 1
+            # bombs
+            if self.bomb.fallen:
+                self.bomb.fuse += 1  # start counting after bomb has fallen
+                if self.bomb.fuse % 50 == 0:
+                    self.explosionPoint = (self.bomb.bombPoints[0] - 200,
+                                           self.bomb.bombPoints[1] - 200)
+                    self.bomb.explode(allMonsters, allObstacles, self.mainChar)
+                    self.exploded = True
             allMonsters.update()
+            self.mainChar.update(allMonsters, allObstacles)
+            if self.exploded:
+                self.explosionDelay += 1
+            if self.explosionDelay % 20 == 0:
+                self.exploded = False
 
     def redrawAll(self, screen):
 
@@ -220,6 +239,11 @@ class SketchyQuest(PygameGame):
         # game screen
         elif self.gameState == "game":
             pygame.Surface.blit(self.screen, self.gameScreen, (0 - self.scrollX, 0))
+
+            # obstacles
+            for obstacle in allObstacles:
+                if not obstacle.destroyed:
+                    screen.blit(obstacle.image, (obstacle.rect.left - self.scrollX, obstacle.rect.top))
 
             # monsters
             # monsterA
@@ -246,14 +270,22 @@ class SketchyQuest(PygameGame):
                     self.bomb.bombPoints = (self.bomb.bombPoints[0], self.bomb.bombPoints[1] + gravity)
                 else:
                     self.bomb.fallen = True
+            if self.exploded:
+                self.screen.blit(self.bomb.explosion, self.explosionPoint)
+
             # weapons
             if len(self.mainChar.weapon) == 2:
                 pygame.draw.lines(screen, black, True, (self.mainChar.weapon[0], self.mainChar.weapon[1]), 6)
 
             # main character
+            if not self.mainChar.alive:
+                self.gameState = "Game Over"
             if self.mainChar.attackState:
                 self.mainChar.attackAnimation()
             self.mainChar.charDisplay()
+
+        elif self.gameState == "Game Over":
+            self.screen.blit(self.gameOverScreen, self.gameOverScreenRect)
 
 
 # creating and running the game

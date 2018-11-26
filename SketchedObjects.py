@@ -13,6 +13,17 @@ def getDistance(point1, point2):
     return ((point1[0] - point2[0])**2 + (point1[1] - point2[1])**2)**0.5
 
 
+# spawns a new sprite around the bomb radius
+class BombExplosion(pygame.sprite.Sprite):
+    def __init__(self, centre, explosion):
+        pygame.sprite.Sprite.__init__(self)
+        self.centre = centre
+        self.explosion = 2*explosion
+        self.image = pygame.Surface((self.explosion, self.explosion))
+        self.rect = self.image.get_rect()
+        self.rect.center = self.centre
+
+
 class SketchedObjects(pygame.sprite.Sprite):
     # class for things like bombs and blocks
     def __init__(self, location):
@@ -55,14 +66,32 @@ class Stick():
 
 
 class Bomb(SketchedObjects):
-    def __init__(self, location, bombPoints, radius):
+    def __init__(self, location, bombPoints, realPoints, radius, explosionRadius):
         SketchedObjects.__init__(self, location)
+        self.explosionRadius = explosionRadius
         self.bombPoints = bombPoints
+        self.realPoints = realPoints
         self.radius = radius
         self.fuse = 0
+        self.explosion = pygame.image.load("boom!.png")
+        self.explosionRect = self.explosion.get_rect()
 
     def draw(self):
-        pygame.draw.circle(screen, black, self.bombPoints, self.radius, 6)
+        pygame.draw.circle(screen, black, self.bombPoints, self.radius, 0)
 
-    def explode(self):
-        pass
+    def explode(self, enemyList, obstacles, player):
+        explosion = BombExplosion(self.realPoints, self.explosionRadius)
+        # kills both enemies and player
+        for enemy in enemyList:
+            if pygame.sprite.collide_rect(explosion, enemy):
+                enemy.health -= 3
+        if pygame.sprite.collide_rect(explosion, player):
+            player.health -= 3
+        # destroys obstacles
+        for obstacle in obstacles:
+            if pygame.sprite.collide_rect(explosion, obstacle):
+                obstacle.destroyed = True
+        self.bombPoints = (0, 0)
+        self.fuse = 0
+        self.fallen = False
+
