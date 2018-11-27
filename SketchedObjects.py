@@ -84,9 +84,9 @@ class Bomb(SketchedObjects):
         # kills both enemies and player
         for enemy in enemyList:
             if pygame.sprite.collide_rect(explosion, enemy):
-                enemy.health -= 3
+                enemy.health -= 5
         if pygame.sprite.collide_rect(explosion, player):
-            player.health -= 3
+            player.health -= 5
         # destroys obstacles
         for obstacle in obstacles:
             if pygame.sprite.collide_rect(explosion, obstacle):
@@ -95,3 +95,24 @@ class Bomb(SketchedObjects):
         self.fuse = 0
         self.fallen = False
 
+
+class Block(pygame.sprite.Sprite):
+    def __init__(self, location):
+        pygame.sprite.Sprite.__init__(self)
+        self.location = location
+        self.image = pygame.Surface((100, 300))
+        self.rect = self.image.get_rect()
+        self.rect.left, self.rect.top = location
+        self.timer = 150
+        self.fallen = False
+        self.gone = True
+
+    def draw(self):
+        pygame.draw.rect(screen, black, self.rect, 0)
+
+    def update(self):
+        if self.timer <= 0:
+            self.timer = 0
+            self.gone = True
+        else:
+            self.timer -= 1

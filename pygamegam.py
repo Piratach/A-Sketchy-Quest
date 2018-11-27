@@ -142,12 +142,18 @@ class PygameGame(object):
                                                        self.stick.stickPoints[0][1]),
                                                       (self.stick.stickPoints[1][0] - self.scrollSpeed,
                                                        self.stick.stickPoints[1][1])]
+
                         # check if there's a bomb
                         if self.bomb.bombPoints != (0, 0):
                             self.bomb.bombPoints = (self.bomb.bombPoints[0] - self.scrollSpeed,
                                                     self.bomb.bombPoints[1])
                         if self.exploded:
                             self.explosionPoint = (self.explosionPoint[0] - self.scrollSpeed, self.explosionPoint[1])
+
+                        # check if there's a block
+                        if self.block.location != (-1, -1):
+                            self.block.rect.left -= self.scrollSpeed
+
 
                 elif currKeys[pygame.K_a]:
                     #  when it's at the end, nothing happens
@@ -174,10 +180,19 @@ class PygameGame(object):
                                              self.stick.stickPoints[0][1]),
                                             (self.stick.stickPoints[1][0] + self.scrollSpeed,
                                              self.stick.stickPoints[1][1])]
+
                     # check if there's a bomb
                     if self.bomb.bombPoints != (0, 0):
                         self.bomb.bombPoints = (self.bomb.bombPoints[0] + self.scrollSpeed,
                                                 self.bomb.bombPoints[1])
+                    # check if the bomb has exploded
+                    if self.exploded:
+                        self.explosionPoint = (self.explosionPoint[0] + self.scrollSpeed,
+                                               self.explosionPoint[1])
+
+                    # check if there's a block
+                    if self.block.location != (-1, -1):
+                        self.block.rect.left += self.scrollSpeed
 
             for event in pygame.event.get():
                 if pygame.mouse.get_pressed()[0] == 1:
