@@ -85,7 +85,7 @@ class PygameGame(object):
             self.timerFired(time)
 
             # jump!
-            if self.mainChar.jumpState:  # while jumping
+            if not self.credits and self.mainChar.jumpState:  # while jumping
                 if self.mainChar.tempWeapon == []:
                     self.mainChar.tempWeapon = self.mainChar.weapon
                 self.mainChar.rect.top -= self.mainChar.velocity
@@ -121,7 +121,7 @@ class PygameGame(object):
 
             # hold key to move continuously
             # https://stackoverflow.com/questions/9961563/how-can-i-make-a-sprite-move-when-key-is-held-down
-            if self.gameState == "game":
+            if self.gameState == "stage1" or self.gameState == "stage2":
                 currKeys = pygame.key.get_pressed()
                 if currKeys[pygame.K_d]:
                     self.mainChar.moveRight()
@@ -152,10 +152,11 @@ class PygameGame(object):
 
                         # check if there's a block
                         if self.block.location != (-1, -1):
-                            self.block.rect.left -= self.scrollSpeed
+                            self.block.tempRect.left -= self.scrollSpeed
 
 
                 elif currKeys[pygame.K_a]:
+                    self.mainChar.moveLeft()
                     #  when it's at the end, nothing happens
                     if self.scrollX == 0:
                         self.scrollSpeed = 0
@@ -173,7 +174,6 @@ class PygameGame(object):
                         if self.mainChar.tempRect + self.mainChar.width / 2 + self.scrollSpeed > width / 2:
                             self.scrollSpeed = 15
                     self.scrollX -= self.scrollSpeed
-                    self.mainChar.moveLeft()
                     # check if there's a stick
                     if len(self.stick.stickPoints) == 2:
                         self.stick.stickPoints = [(self.stick.stickPoints[0][0] + self.scrollSpeed,
@@ -192,7 +192,15 @@ class PygameGame(object):
 
                     # check if there's a block
                     if self.block.location != (-1, -1):
-                        self.block.rect.left += self.scrollSpeed
+                        self.block.tempRect.left += self.scrollSpeed
+
+            elif self.gameState == "boss1":
+                currKeys = pygame.key.get_pressed()
+                if currKeys[pygame.K_d]:
+                    self.mainChar.moveRight()
+                elif currKeys[pygame.K_a]:
+                    self.mainChar.moveLeft()
+
 
             for event in pygame.event.get():
                 if pygame.mouse.get_pressed()[0] == 1:
