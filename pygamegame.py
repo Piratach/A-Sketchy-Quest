@@ -138,7 +138,8 @@ class PygameGame(object):
             # https://stackoverflow.com/questions/9961563/
             # how-can-i-make-a-sprite-move-when-key-is-held-down
             if self.gameState == "stage1" or self.gameState == "stage2" \
-                    or self.gameState == "survival":
+                    or self.gameState == "survival" or \
+                    self.gameState == "play stage":
                 # or \
                 #                     self.gameState == "edit stage":
                 currKeys = pygame.key.get_pressed()
@@ -245,10 +246,10 @@ class PygameGame(object):
             elif self.gameState == "edit stage":
                 currKeys = pygame.key.get_pressed()
                 if currKeys[pygame.K_d]:
-                    if self.scrollX < 9980:
+                    if self.scrollX < 11005:
                         self.scrollX += 25
                     else:
-                        self.scrollX = 9980
+                        self.scrollX = 11005
                 elif currKeys[pygame.K_a]:
                     if self.scrollX > 0:
                         self.scrollX -= 25
