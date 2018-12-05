@@ -13,6 +13,7 @@ class Weapon(pygame.sprite.Sprite):
         self.image = pygame.Surface((stickLen, charHeight))
         self.rect = self.image.get_rect()
         self.rect.left, self.rect.top = location
+        self.imageSurface = pygame.Surface([self.rect.left, self.rect.top])
 
 
 # class for the detection field
@@ -32,7 +33,8 @@ class Projectile(pygame.sprite.Sprite):
         self.image.fill((0, 0, 255))
         self.rect = self.image.get_rect()
         self.rect.left, self.rect.top = spawnLocation
-        self.velocity = velocity  # to move a different direction, make it negative
+        self.velocity = velocity
+        # to move a different direction, make it negative
         self.outOfBounds = False
         self.gameState = ""
 
@@ -44,7 +46,7 @@ class Projectile(pygame.sprite.Sprite):
 
 # class for balls of fire
 class Fire(pygame.sprite.Sprite):
-    def __init__(self, velocity, spawnLocation):
+    def __init__(self, velocity, spawnLocation, right, gameState):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.Surface((40, 40))
         self.radius = 40
@@ -55,25 +57,43 @@ class Fire(pygame.sprite.Sprite):
         self.outOfBounds = False
         self.extinguished = False
         self.timer = 50
+        self.gameState = gameState
+        self.right = right
+        self.displayRect = 0
 
-    def update(self, block, player):
+    def update(self, block, player, state):
         if self.timer <= 0:
             self.timer = 0
         else:
             self.timer -= 1
         if self.rect.center[1] + 30 >= 610:
             self.outOfBounds = True
-        elif not block.destroyed and pygame.sprite.collide_rect(self, block) or self.timer == 0:
+        elif not block.destroyed and \
+                pygame.sprite.collide_rect(self, block) or self.timer == 0:
             self.extinguished = True
             self.outOfBounds = True
             self.timer = 100
         if not self.outOfBounds:
-            # moves diagonally
-            self.rect.center = (self.rect.center[0] - self.velocity, self.rect.center[1] + self.velocity)
+            if not self.right:
+                # moves diagonally
+                self.rect.center = (self.rect.center[0] - self.velocity,
+                                    self.rect.center[1] + self.velocity)
+                self.displayRect -= self.velocity
+            else:
+                self.rect.center = (self.rect.center[0] + self.velocity,
+                                    self.rect.center[1] + self.velocity)
+                self.displayRect += self.velocity
 
     def draw(self):
         if self.velocity != 0:
-            pygame.draw.circle(screen, self.colour, self.rect.center, self.radius, 0)
+            if self.gameState == "boss1":
+                pygame.draw.circle(screen, self.colour,
+                                   self.rect.center, self.radius, 0)
+            else:
+                pygame.draw.circle(screen, self.colour,
+                                   (self.displayRect,
+                                    self.rect.center[1]),
+                                   self.radius, 0)
 
 
 # from https://www.pygame.org/docs/ref/sprite.html
@@ -113,7 +133,7 @@ class CharSprites(pygame.sprite.Sprite):
         self.health = 3
         self.alive = True
         self.cooldown = 100
-        self.creditsDelay = 100
+        self.creditsDelay = 150
         self.left = False
         self.right = True  # starts facing right
         self.stage = ""
@@ -130,6 +150,14 @@ class CharSprites(pygame.sprite.Sprite):
             self.tempRect = self.rect.left
             screen.blit(self.image, self.rect)
 
+    def kindaDisplay(self):  # used for stage building
+        if 11491 >= self.rect.left > 480:
+            self.tempRect = 481
+        elif self.rect.left > 11491:
+            pass
+        else:
+            self.tempRect = self.rect.left
+
     def moveRight(self):
         self.right = True
         self.left = False
@@ -138,30 +166,58 @@ class CharSprites(pygame.sprite.Sprite):
                 self.rect.left += self.velocityX
                 self.tempRect += self.velocityX
                 if self.equipped:
-                    self.weapon = [(self.weapon[0][0] + self.velocityX, self.weapon[0][1]),
-                                   (self.weapon[1][0] + self.velocityX, self.weapon[1][1])]
-                    self.weaponLeft = [(self.weaponLeft[0][0] + self.velocityX, self.weaponLeft[0][1]),
-                                       (self.weaponLeft[1][0] + self.velocityX, self.weaponLeft[1][1])]
-                    self.weaponRight = [(self.weaponRight[0][0] + self.velocityX, self.weaponRight[0][1]),
-                                        (self.weaponRight[1][0] + self.velocityX, self.weaponRight[1][1])]
+                    self.weapon = [(self.weapon[0][0] + self.velocityX,
+                                    self.weapon[0][1]),
+                                   (self.weapon[1][0] + self.velocityX,
+                                    self.weapon[1][1])]
+                    self.weaponLeft = [(self.weaponLeft[0][0] + self.velocityX,
+                                        self.weaponLeft[0][1]),
+                                       (self.weaponLeft[1][0] + self.velocityX,
+                                        self.weaponLeft[1][1])]
+                    self.weaponRight = [
+                        (self.weaponRight[0][0] + self.velocityX,
+                         self.weaponRight[0][1]),
+                        (self.weaponRight[1][0] + self.velocityX,
+                         self.weaponRight[1][1])
+                    ]
             else:
                 self.rect.left += self.velocityX
                 if self.equipped and self.tempRect < 481:
-                    self.weapon = [(self.weapon[0][0] + self.velocityX, self.weapon[0][1]),
-                                   (self.weapon[1][0] + self.velocityX, self.weapon[1][1])]
-                    self.weaponLeft = [(self.weaponLeft[0][0] + self.velocityX, self.weaponLeft[0][1]),
-                                       (self.weaponLeft[1][0] + self.velocityX, self.weaponLeft[1][1])]
-                    self.weaponRight = [(self.weaponRight[0][0] + self.velocityX, self.weaponRight[0][1]),
-                                        (self.weaponRight[1][0] + self.velocityX, self.weaponRight[1][1])]
+                    self.weapon = [(self.weapon[0][0] + self.velocityX,
+                                    self.weapon[0][1]),
+                                   (self.weapon[1][0] + self.velocityX,
+                                    self.weapon[1][1])]
+                    self.weaponLeft = [(self.weaponLeft[0][0]
+                                        + self.velocityX,
+                                        self.weaponLeft[0][1]),
+                                       (self.weaponLeft[1][0]
+                                        + self.velocityX,
+                                        self.weaponLeft[1][1])]
+                    self.weaponRight = [
+                        (self.weaponRight[0][0] + self.velocityX,
+                         self.weaponRight[0][1]),
+                        (self.weaponRight[1][0] + self.velocityX,
+                         self.weaponRight[1][1])
+                    ]
                 elif self.rect.left > 11491:
                     self.tempRect += self.velocityX
                     if self.equipped:
-                        self.weapon = [(self.weapon[0][0] + self.velocityX, self.weapon[0][1]),
-                                       (self.weapon[1][0] + self.velocityX, self.weapon[1][1])]
-                        self.weaponLeft = [(self.weaponLeft[0][0] + self.velocityX, self.weaponLeft[0][1]),
-                                           (self.weaponLeft[1][0] + self.velocityX, self.weaponLeft[1][1])]
-                        self.weaponRight = [(self.weaponRight[0][0] + self.velocityX, self.weaponRight[0][1]),
-                                            (self.weaponRight[1][0] + self.velocityX, self.weaponRight[1][1])]
+                        self.weapon = [(self.weapon[0][0] + self.velocityX,
+                                        self.weapon[0][1]),
+                                       (self.weapon[1][0] + self.velocityX,
+                                        self.weapon[1][1])]
+                        self.weaponLeft = [
+                            (self.weaponLeft[0][0] + self.velocityX,
+                             self.weaponLeft[0][1]),
+                            (self.weaponLeft[1][0] + self.velocityX,
+                             self.weaponLeft[1][1])
+                        ]
+                        self.weaponRight = [
+                            (self.weaponRight[0][0] + self.velocityX,
+                             self.weaponRight[0][1]),
+                            (self.weaponRight[1][0] + self.velocityX,
+                             self.weaponRight[1][1])
+                        ]
                 elif self.equipped and self.tempRect == 481:
                     self.weapon = self.weapon
 
@@ -172,30 +228,53 @@ class CharSprites(pygame.sprite.Sprite):
             self.rect.left -= self.velocityX
             self.tempRect -= self.velocityX
             if self.equipped:
-                self.weapon = [(self.weapon[0][0] - self.velocityX, self.weapon[0][1]),
-                               (self.weapon[1][0] - self.velocityX, self.weapon[1][1])]
-                self.weaponLeft = [(self.weaponLeft[0][0] - self.velocityX, self.weaponLeft[0][1]),
-                                   (self.weaponLeft[1][0] - self.velocityX, self.weaponLeft[1][1])]
-                self.weaponRight = [(self.weaponRight[0][0] - self.velocityX, self.weaponRight[0][1]),
-                                    (self.weaponRight[1][0] - self.velocityX, self.weaponRight[1][1])]
+                self.weapon = [(self.weapon[0][0] - self.velocityX,
+                                self.weapon[0][1]),
+                               (self.weapon[1][0] - self.velocityX,
+                                self.weapon[1][1])]
+                self.weaponLeft = [(self.weaponLeft[0][0] - self.velocityX,
+                                    self.weaponLeft[0][1]),
+                                   (self.weaponLeft[1][0] - self.velocityX,
+                                    self.weaponLeft[1][1])]
+                self.weaponRight = [
+                    (self.weaponRight[0][0] - self.velocityX,
+                     self.weaponRight[0][1]),
+                    (self.weaponRight[1][0] - self.velocityX,
+                     self.weaponRight[1][1])]
         else:
             self.rect.left -= self.velocityX
             if self.equipped and self.tempRect < 481:
-                self.weapon = [(self.weapon[0][0] - self.velocityX, self.weapon[0][1]),
-                               (self.weapon[1][0] - self.velocityX, self.weapon[1][1])]
-                self.weaponLeft = [(self.weaponLeft[0][0] - self.velocityX, self.weaponLeft[0][1]),
-                                   (self.weaponLeft[1][0] - self.velocityX, self.weaponLeft[1][1])]
-                self.weaponRight = [(self.weaponRight[0][0] - self.velocityX, self.weaponRight[0][1]),
-                                    (self.weaponRight[1][0] - self.velocityX, self.weaponRight[1][1])]
+                self.weapon = [(self.weapon[0][0] - self.velocityX,
+                                self.weapon[0][1]),
+                               (self.weapon[1][0] - self.velocityX,
+                                self.weapon[1][1])]
+                self.weaponLeft = [(self.weaponLeft[0][0] - self.velocityX,
+                                    self.weaponLeft[0][1]),
+                                   (self.weaponLeft[1][0] - self.velocityX,
+                                    self.weaponLeft[1][1])]
+                self.weaponRight = [
+                    (self.weaponRight[0][0] - self.velocityX,
+                     self.weaponRight[0][1]),
+                    (self.weaponRight[1][0] - self.velocityX,
+                     self.weaponRight[1][1])
+                ]
             elif self.rect.left > 11491:
                 self.tempRect -= self.velocityX
                 if self.equipped:
-                    self.weapon = [(self.weapon[0][0] - self.velocityX, self.weapon[0][1]),
-                                   (self.weapon[1][0] - self.velocityX, self.weapon[1][1])]
-                    self.weaponLeft = [(self.weaponLeft[0][0] - self.velocityX, self.weaponLeft[0][1]),
-                                       (self.weaponLeft[1][0] - self.velocityX, self.weaponLeft[1][1])]
-                    self.weaponRight = [(self.weaponRight[0][0] - self.velocityX, self.weaponRight[0][1]),
-                                        (self.weaponRight[1][0] - self.velocityX, self.weaponRight[1][1])]
+                    self.weapon = [(self.weapon[0][0] - self.velocityX,
+                                    self.weapon[0][1]),
+                                   (self.weapon[1][0] - self.velocityX,
+                                    self.weapon[1][1])]
+                    self.weaponLeft = [(self.weaponLeft[0][0] - self.velocityX,
+                                        self.weaponLeft[0][1]),
+                                       (self.weaponLeft[1][0] - self.velocityX,
+                                        self.weaponLeft[1][1])]
+                    self.weaponRight = [
+                        (self.weaponRight[0][0] - self.velocityX,
+                         self.weaponRight[0][1]),
+                        (self.weaponRight[1][0] - self.velocityX,
+                         self.weaponRight[1][1])
+                    ]
             elif self.equipped and self.tempRect == 481:
                 self.weapon = self.weapon
 
@@ -218,16 +297,19 @@ class CharSprites(pygame.sprite.Sprite):
                 # creates a hitbox to check for collision with monsters
             if self.right:
                 weapon = Weapon(self.stickLen, self.height,
-                                (self.rect.left + self.width / 2, self.rect.top))
+                                (self.rect.left + self.width / 2,
+                                 self.rect.top))
             elif self.left:
                 weapon = Weapon(self.stickLen, self.height,
-                                (self.rect.left + self.width / 2 - self.stickLen, self.rect.top))
+                                (self.rect.left + self.width / 2
+                                 - self.stickLen, self.rect.top))
             # check for collisions
             for enemy in enemyList:
                 if pygame.sprite.collide_rect(weapon, enemy):
                     self.durability -= 1
                     enemy.health -= 1
-            if dragon.cooldown == 0 and pygame.sprite.collide_rect(weapon, dragon):
+            if dragon.cooldown == 0 and \
+                    pygame.sprite.collide_rect(weapon, dragon):
                 self.durability -= 1
                 dragon.cooldown = 100
                 dragon.health -= 1
@@ -241,18 +323,25 @@ class CharSprites(pygame.sprite.Sprite):
             else:
                 self.angle -= 0.4
             self.weapon = [self.weapon[0],
-                           (self.weapon[0][0] + self.stickLen * math.cos(self.angle),
-                            self.weapon[0][1] + self.stickLen * math.sin(self.angle))]
+                           (self.weapon[0][0]
+                            + self.stickLen * math.cos(self.angle),
+                            self.weapon[0][1]
+                            + self.stickLen * math.sin(self.angle))]
             if self.angle >= 0:
                 self.weapon = [self.weapon[0],
                                (self.weapon[0][0] + self.stickLen * math.cos(0),
-                                self.weapon[0][1] + self.stickLen * math.sin(0))]
+                                self.weapon[0][1]
+                                + self.stickLen * math.sin(0))]
                 self.weaponRight = [self.weapon[0],
-                                    (self.weapon[0][0] + self.stickLen * math.cos(0),
-                                     self.weapon[0][1] + self.stickLen * math.sin(0))]
+                                    (self.weapon[0][0]
+                                     + self.stickLen * math.cos(0),
+                                     self.weapon[0][1]
+                                     + self.stickLen * math.sin(0))]
                 self.weaponLeft = [self.weapon[0],
-                                   (self.weapon[0][0] - self.stickLen * math.cos(0),
-                                    self.weapon[0][1] - self.stickLen * math.sin(0))]
+                                   (self.weapon[0][0]
+                                    - self.stickLen * math.cos(0),
+                                    self.weapon[0][1]
+                                    - self.stickLen * math.sin(0))]
                 self.attackState = False
         elif self.equipped and self.left:
             if self.angle >= math.pi / 3 or self.weaponDown:
@@ -261,18 +350,25 @@ class CharSprites(pygame.sprite.Sprite):
             else:
                 self.angle += 0.4
             self.weapon = [self.weapon[0],
-                           (self.weapon[0][0] - self.stickLen * math.cos(self.angle),
-                            self.weapon[0][1] - self.stickLen * math.sin(self.angle))]
+                           (self.weapon[0][0]
+                            - self.stickLen * math.cos(self.angle),
+                            self.weapon[0][1]
+                            - self.stickLen * math.sin(self.angle))]
             if self.angle <= 0:
                 self.weapon = [self.weapon[0],
                                (self.weapon[0][0] - self.stickLen * math.cos(0),
-                                self.weapon[0][1] - self.stickLen * math.sin(0))]
+                                self.weapon[0][1]
+                                - self.stickLen * math.sin(0))]
                 self.weaponRight = [self.weapon[0],
-                                    (self.weapon[0][0] + self.stickLen * math.cos(0),
-                                     self.weapon[0][1] + self.stickLen * math.sin(0))]
+                                    (self.weapon[0][0]
+                                     + self.stickLen * math.cos(0),
+                                     self.weapon[0][1]
+                                     + self.stickLen * math.sin(0))]
                 self.weaponLeft = [self.weapon[0],
-                                   (self.weapon[0][0] - self.stickLen * math.cos(0),
-                                    self.weapon[0][1] - self.stickLen * math.sin(0))]
+                                   (self.weapon[0][0]
+                                    - self.stickLen * math.cos(0),
+                                    self.weapon[0][1]
+                                    - self.stickLen * math.sin(0))]
                 self.attackState = False
 
     def update(self, enemyList, fire, dragon, obstacles, block, stage):
@@ -287,24 +383,26 @@ class CharSprites(pygame.sprite.Sprite):
         # enemies collide check
         if self.cooldown == 0:
             for enemy in enemyList:
-                if enemy.alive and enemy.stage == stage and pygame.sprite.collide_rect(self, enemy):
-                    print(enemy, "enemy collide")
+                if enemy.alive and enemy.stage == stage \
+                        and pygame.sprite.collide_mask(self, enemy):
                     self.health -= 1
                     self.cooldown = 100
                 if isinstance(enemy, BlueBlob) and len(enemy.bullets) >= 1:
                     for bullet in enemy.bullets:
-                        if bullet.gameState == stage and pygame.sprite.collide_rect(self, bullet):
-                            print("bullet collide")
+                        if bullet.gameState == stage and\
+                                pygame.sprite.collide_rect(self, bullet):
                             try:
                                 enemy.bullets.remove(bullet)
                             except:
                                 pass
                             self.health -= 1
                             self.cooldown = 100
-            if pygame.sprite.collide_rect(self, fire):
+            if fire.gameState == stage and\
+                    pygame.sprite.collide_rect(self, fire):
                 self.health -= 1
                 self.cooldown = 100
-            if pygame.sprite.collide_rect(self, dragon):
+            if dragon.gameState == stage and dragon.alive and \
+                    pygame.sprite.collide_mask(self, dragon):
                 self.health -= 1
                 self.cooldown = 100
         # check for obstacles
@@ -360,7 +458,12 @@ class RedBlob(CharSprites):
         if self.alive:
             if self.blocked:
                 self.velocityX = -self.velocityX
-            elif self.rect.left + self.width / 2 + self.velocityX >= self.locationX + self.radius:
+            elif self.rect.left + self.width /2 + self.velocityX >= \
+                12026 or self.rect.left - self.width/2 + self.velocityX \
+                    <= 0:
+                self.velocityX = -self.velocityX
+            elif self.rect.left + self.width / 2 +\
+                    self.velocityX >= self.locationX + self.radius:
                 self.velocityX = -self.velocityX
             elif self.rect.left - self.width / 2 \
                     + self.velocityX <= self.locationX - self.radius:
@@ -398,16 +501,22 @@ class BlueBlob(RedBlob):
         else:
             self.time -= 1
         if self.time == 0:
-            if pygame.sprite.collide_rect(self.detection, player) and player.rect.left <= self.rect.center[0]:
+            if pygame.sprite.collide_rect(self.detection, player) and\
+                    player.rect.left <= self.rect.center[0]:
                 self.left = True
                 self.right = False
-                bullet = Projectile(self.bulletVelocity, (self.rect.center[0], self.rect.center[1] + 50))
+                bullet = Projectile(self.bulletVelocity,
+                                    (self.rect.center[0],
+                                     self.rect.center[1] + 50))
                 self.bullets.add(bullet)
                 self.time = 100
-            elif pygame.sprite.collide_rect(self.detection, player) and player.rect.left >= self.rect.center[0]:
+            elif pygame.sprite.collide_rect(self.detection, player) and\
+                    player.rect.left >= self.rect.center[0]:
                 self.left = False
                 self.right = True
-                bullet = Projectile(-self.bulletVelocity, (self.rect.center[0], self.rect.center[1] + 50))
+                bullet = Projectile(-self.bulletVelocity,
+                                    (self.rect.center[0],
+                                     self.rect.center[1] + 50))
                 self.bullets.add(bullet)
                 self.time = 100
 
@@ -418,27 +527,35 @@ class BlueBlob(RedBlob):
 
 # the final boss!!
 class Dragon(pygame.sprite.Sprite):
-    def __init__(self, fileName, location):
+    def __init__(self, fileName, location, gameState):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load(fileName)
+        self.imageRight = pygame.image.load("dragon right.png")
+        self.imageLeft = pygame.image.load("dragon.png")
         self.rect = self.image.get_rect()
         self.rect.left, self.rect.top = location
+        self.mask = pygame.mask.from_surface(self.image)
         self.velocity = 4
         self.fireVelocity = 20
         self.health = 5
         self.alive = True
         self.cooldown = 100
+        self.gameState = gameState
+        self.right = False
+
         # fly
         self.flyTime = 300
         self.flyDown = False
         self.oscillateDown = False
         self.flyUp = False
         self.oscillateUp = False
+
         # attack
         self.attacking = False
         self.attackCD = 100
         self.attackStance = pygame.image.load("dragonfire.png")
-        self.fire = Fire(0, (0, 0))
+        self.attackStanceR = pygame.image.load("dragonfire right.png")
+        self.fire = Fire(0, (0, 0), self.right, self.gameState)
         self.fired = False
         self.fireLeft = 0
         self.fireTop = 0
@@ -483,22 +600,29 @@ class Dragon(pygame.sprite.Sprite):
                     self.flyUp = False
                     self.flyTime = 300
 
-    def attack(self):
+    def attack(self, scrollX):
         if self.attackCD <= 0:
             self.attackCD = 0
         else:
             self.attackCD -= 1
         if not self.fired and self.attackCD == 0:
             self.attacking = True
-            self.fireLeft = self.rect.left + 130
-            self.fireTop = self.rect.top + 120
-            self.fire = Fire(self.fireVelocity, (self.fireLeft, self.fireTop))  # perhaps make the fire continuous
+            if not self.right:
+                self.fireLeft = self.rect.left + 130
+                self.fireTop = self.rect.top + 120
+            else:
+                self.fireLeft = self.rect.left + 360
+                self.fireTop = self.rect.top + 120
+            self.fire = Fire(self.fireVelocity, (self.fireLeft,
+                                                 self.fireTop), self.right,
+                             self.gameState)
+            self.fire.displayRect = self.fireLeft - scrollX
             self.fired = True
         if self.fire.outOfBounds:
             self.fired = False
             self.attacking = False
             self.attackCD = 100
-            self.fire = Fire(0, (0, 0))
+            self.fire = Fire(0, (0, 0), self.right, self.gameState)
 
 
 class Obstacles(pygame.sprite.Sprite):

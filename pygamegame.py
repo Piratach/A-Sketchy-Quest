@@ -85,101 +85,175 @@ class PygameGame(object):
             self.timerFired(time)
 
             # jump!
-            if self.mainChar.jumpState:  # while jumping
+            if not self.credits and self.mainChar.jumpState:  # while jumping
                 if self.mainChar.tempWeapon == []:
                     self.mainChar.tempWeapon = self.mainChar.weapon
                 self.mainChar.rect.top -= self.mainChar.velocity
                 if self.mainChar.equipped:
                     self.mainChar.weapon = [(self.mainChar.weapon[0][0],
-                                             self.mainChar.weapon[0][1] - self.mainChar.velocity),
+                                             self.mainChar.weapon[0][1]
+                                             - self.mainChar.velocity),
                                             (self.mainChar.weapon[1][0],
-                                             self.mainChar.weapon[1][1] - self.mainChar.velocity)]
+                                             self.mainChar.weapon[1][1]
+                                             - self.mainChar.velocity)]
+                    self.mainChar.weaponRight = [
+                        (self.mainChar.weaponRight[0][0],
+                         self.mainChar.weaponRight[0][1]
+                         - self.mainChar.velocity),
+                        (self.mainChar.weaponRight[1][0],
+                        self.mainChar.weaponRight[1][1]
+                         - self.mainChar.velocity)
+                    ]
+                    self.mainChar.weaponLeft = [
+                        (self.mainChar.weaponLeft[0][0],
+                         self.mainChar.weaponLeft[0][1]
+                         - self.mainChar.velocity),
+                        (self.mainChar.weaponLeft[1][0],
+                         self.mainChar.weaponLeft[1][1]
+                         - self.mainChar.velocity)
+                    ]
                 self.mainChar.velocity -= self.mainChar.gravity
-                if self.mainChar.rect.top >= 470:
-                    self.mainChar.rect.top = 470  # in case character goes above 470
+                if self.mainChar.rect.top >= 465:
+                    self.mainChar.rect.top = 465
+                    # in case character goes above 465 (ground)
                     if self.mainChar.equipped:
-                        self.mainChar.weapon = [(self.mainChar.weapon[0][0],
-                                                 self.mainChar.tempWeapon[0][1]),
-                                                (self.mainChar.weapon[0][0] + self.stickLen,
-                                                 self.mainChar.weapon[0][1])]
+                        if self.mainChar.right:
+                            self.mainChar.weapon = [
+                                (self.mainChar.weapon[0][0],
+                                 self.mainChar.tempWeapon[0][1]),
+                                (self.mainChar.weapon[0][0] + self.stickLen,
+                                 self.mainChar.weapon[0][1])
+                            ]
+                        elif self.mainChar.left:
+                            self.mainChar.weapon = [
+                                (self.mainChar.weapon[0][0],
+                                 self.mainChar.tempWeapon[0][1]),
+                                (self.mainChar.weapon[0][0] - self.stickLen,
+                                 self.mainChar.weapon[0][1])
+                            ]
                     self.mainChar.tempWeapon = []
                     self.mainChar.jumpState = False
 
-            # attack!
-            if self.mainChar.attackState:
-                if self.mainChar.angle <= -math.pi/3 or self.mainChar.weaponDown:
-                    self.mainChar.angle += 0.4
-                    self.mainChar.weaponDown = True
-                else:
-                    self.mainChar.angle -= 0.4
-                self.mainChar.weapon = [self.mainChar.weapon[0],
-                                        (self.mainChar.weapon[0][0] + self.stickLen*math.cos(self.mainChar.angle),
-                                         self.mainChar.weapon[0][1] + self.stickLen*math.sin(self.mainChar.angle))]
-                if self.mainChar.angle >= 0:
-                    self.mainChar.weapon = [self.mainChar.weapon[0],
-                                            (self.mainChar.weapon[0][0] + self.stickLen * math.cos(0),
-                                             self.mainChar.weapon[0][1] + self.stickLen * math.sin(0))]
-                    self.mainChar.attackState = False
-
             # hold key to move continuously
-            # https://stackoverflow.com/questions/9961563/how-can-i-make-a-sprite-move-when-key-is-held-down
-            if self.gameState == "game":
+            # https://stackoverflow.com/questions/9961563/
+            # how-can-i-make-a-sprite-move-when-key-is-held-down
+            if self.gameState == "stage1" or self.gameState == "stage2" \
+                    or self.gameState == "survival":
+                # or \
+                #                     self.gameState == "edit stage":
                 currKeys = pygame.key.get_pressed()
-                print(self.scrollSpeed)
                 if currKeys[pygame.K_d]:
-                    #  add stuff for when he's halfway over only
-                    if self.scrollX == 0:
-                        if self.mainChar.rect.left + self.mainChar.width / 2 + self.scrollSpeed >= width / 2:
-                            self.mainChar.velocityX = 0
-                            self.scrollSpeed = 10
-                        else:
-                            self.mainChar.velocityX = 10
-                            self.scrollSpeed = 0
-                    elif self.scrollX == 12026 - 1024:
-                        self.scrollSpeed = 0
-                        self.mainChar.velocityX = 10
-                    self.scrollX += self.scrollSpeed
                     self.mainChar.moveRight()
-                    # check if there's a stick
-                    if len(self.stickPoints) == 2:
-                        self.stickPoints = [(self.stickPoints[0][0] - self.scrollSpeed,
-                                             self.stickPoints[0][1]),
-                                            (self.stickPoints[1][0] - self.scrollSpeed,
-                                             self.stickPoints[1][1])]
-                    # check if there's a bomb
-                    if self.bomb.bombPoints != (0, 0):
-                        self.bomb.bombPoints = (self.bomb.bombPoints[0] - self.scrollSpeed,
-                                                self.bomb.bombPoints[1])
+                    #  add stuff for when he's halfway over only
+                    if not self.mainChar.blocked:
+                        if self.scrollX == 0:
+                            if self.mainChar.tempRect + \
+                                    self.mainChar.width / 2 + \
+                                    self.scrollSpeed >= width / 2:
+                                self.scrollSpeed = 15
+                            else:
+                                self.scrollSpeed = 0
+                        elif self.scrollX >= self.gameScreenLen \
+                                - self.screenWidth:
+                            self.scrollX = self.gameScreenLen \
+                                           - self.screenWidth
+                            self.scrollSpeed = 0
+                        self.scrollX += self.scrollSpeed
+                        # check if there's a stick
+                        if len(self.stick.stickPoints) == 2:
+                            self.stick.stickPoints = [
+                                (self.stick.stickPoints[0][0]
+                                 - self.scrollSpeed,
+                                 self.stick.stickPoints[0][1]),
+                                (self.stick.stickPoints[1][0]
+                                 - self.scrollSpeed,
+                                 self.stick.stickPoints[1][1])
+                            ]
+
+                        # check if there's a bomb
+                        if self.bomb.bombPoints != (0, 0):
+                            self.bomb.bombPoints = (self.bomb.bombPoints[0]
+                                                    - self.scrollSpeed,
+                                                    self.bomb.bombPoints[1])
+                        if self.exploded:
+                            self.explosionPoint = (self.explosionPoint[0]
+                                                   - self.scrollSpeed,
+                                                   self.explosionPoint[1])
+
+                        # check if there's a block
+                        if self.block.location != (-1, -1):
+                            self.block.tempRect.left -= self.scrollSpeed
+
+                        if self.dragon.attacking and self.dragon.alive:
+                            self.dragon.fire.displayRect -= self.scrollSpeed
 
                 elif currKeys[pygame.K_a]:
+                    self.mainChar.moveLeft()
                     #  when it's at the end, nothing happens
                     if self.scrollX == 0:
-                        self.mainChar.velocityX = 10
                         self.scrollSpeed = 0
                     elif self.scrollX < 0:
                         self.scrollX = 0
                         self.scrollSpeed = 0
-                        self.mainChar.velocityX = 10
-                    elif self.scrollX == 12026 - 1024:
-                        self.scrollSpeed = 0
-                        self.mainChar.velocityX = 10
+                    elif self.scrollX >= self.gameScreenLen - self.screenWidth:
+                        if self.mainChar.tempRect + self.mainChar.width / 2 \
+                                + self.scrollSpeed <= 517.5:
+                            self.scrollX = self.gameScreenLen - self.screenWidth
+                            self.scrollSpeed = 15
+                        else:
+                            self.scrollX = self.gameScreenLen - self.screenWidth
+                            self.scrollSpeed = 0
                     else:
-                        if self.mainChar.rect.left + self.mainChar.width / 2 + self.scrollSpeed > width / 2:
-                            self.scrollSpeed = 10
-                        elif self.mainChar.rect.left - self.mainChar.width / 2 - self.scrollSpeed < width / 2:
-                            self.scrollSpeed = -10
+                        if self.mainChar.tempRect + self.mainChar.width / 2 \
+                                + self.scrollSpeed > width / 2:
+                            self.scrollSpeed = 15
                     self.scrollX -= self.scrollSpeed
-                    self.mainChar.moveLeft()
                     # check if there's a stick
-                    if len(self.stickPoints) == 2:
-                        self.stickPoints = [(self.stickPoints[0][0] + self.scrollSpeed,
-                                             self.stickPoints[0][1]),
-                                            (self.stickPoints[1][0] + self.scrollSpeed,
-                                             self.stickPoints[1][1])]
+                    if len(self.stick.stickPoints) == 2:
+                        self.stick.stickPoints = [
+                            (self.stick.stickPoints[0][0] + self.scrollSpeed,
+                             self.stick.stickPoints[0][1]),
+                            (self.stick.stickPoints[1][0] + self.scrollSpeed,
+                             self.stick.stickPoints[1][1])
+                        ]
+
                     # check if there's a bomb
                     if self.bomb.bombPoints != (0, 0):
-                        self.bomb.bombPoints = (self.bomb.bombPoints[0] + self.scrollSpeed,
+                        self.bomb.bombPoints = (self.bomb.bombPoints[0]
+                                                + self.scrollSpeed,
                                                 self.bomb.bombPoints[1])
+                    # check if the bomb has exploded
+                    if self.exploded:
+                        self.explosionPoint = (self.explosionPoint[0]
+                                               + self.scrollSpeed,
+                                               self.explosionPoint[1])
+
+                    # check if there's a block
+                    if self.block.location != (-1, -1):
+                        self.block.tempRect.left += self.scrollSpeed
+
+                    if self.dragon.attacking and self.dragon.alive:
+                        self.dragon.fire.displayRect += self.scrollSpeed
+
+            elif self.gameState == "boss1":
+                currKeys = pygame.key.get_pressed()
+                if currKeys[pygame.K_d]:
+                    self.mainChar.moveRight()
+                elif currKeys[pygame.K_a]:
+                    self.mainChar.moveLeft()
+
+            elif self.gameState == "edit stage":
+                currKeys = pygame.key.get_pressed()
+                if currKeys[pygame.K_d]:
+                    if self.scrollX < 9980:
+                        self.scrollX += 25
+                    else:
+                        self.scrollX = 9980
+                elif currKeys[pygame.K_a]:
+                    if self.scrollX > 0:
+                        self.scrollX -= 25
+                    else:
+                        self.scrollX = 0
 
             for event in pygame.event.get():
                 if pygame.mouse.get_pressed()[0] == 1:

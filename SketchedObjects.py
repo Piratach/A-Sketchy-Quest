@@ -1,5 +1,5 @@
 import pygame
-from charSprites import CharSprites, Weapon, RedBlob, Obstacles, BlueBlob
+from charSprites import BlueBlob
 
 size = width, height = 1024, 768
 screen = pygame.display.set_mode(size)
@@ -46,20 +46,28 @@ class Stick():
 
     def update(self):
         if len(self.stickPoints) == 2:
-            diff = abs(self.stickLen - (getDistance(self.stickPoints[0], self.stickPoints[1])))
-            if 100 <= self.stickLen <= 250:  # only allow sticks of reasonable length
-                pygame.draw.lines(screen, self.colour, True, (self.stickPoints[0], self.stickPoints[1]), 6)
+            diff = abs(self.stickLen - (getDistance(self.stickPoints[0],
+                                                    self.stickPoints[1])))
+            if 100 <= self.stickLen <= 250:
+                # only allow sticks of reasonable length
+                pygame.draw.lines(screen, self.colour, True,
+                                  (self.stickPoints[0], self.stickPoints[1]), 6)
             # make these sticks fall
             if self.stickPoints[0][1] >= self.stickPoints[1][1]:
                 if self.stickPoints[0][1] <= 600:
-                    self.stickPoints[0] = (self.stickPoints[0][0], self.stickPoints[0][1] + gravity)
+                    self.stickPoints[0] = (self.stickPoints[0][0],
+                                           self.stickPoints[0][1] + gravity)
                 if self.stickPoints[1][1] <= 600:
-                    self.stickPoints[1] = (self.stickPoints[1][0] + diff, self.stickPoints[1][1] + gravity)
+                    self.stickPoints[1] = (self.stickPoints[1][0]
+                                           + diff, self.stickPoints[1][1]
+                                           + gravity)
             else:
                 if self.stickPoints[1][1] <= 600:
-                    self.stickPoints[1] = (self.stickPoints[1][0], self.stickPoints[1][1] + gravity)
+                    self.stickPoints[1] = (self.stickPoints[1][0],
+                                           self.stickPoints[1][1] + gravity)
                 if self.stickPoints[0][1] <= 600:
-                    self.stickPoints[0] = (self.stickPoints[0][0] - diff, self.stickPoints[0][1] + gravity)
+                    self.stickPoints[0] = (self.stickPoints[0][0] - diff,
+                                           self.stickPoints[0][1] + gravity)
             # making sure the point on the left is index 0
             if self.stickPoints[1][0] < self.stickPoints[0][0]:
                 self.stickPoints = [self.stickPoints[1], self.stickPoints[0]]
@@ -69,7 +77,8 @@ class Stick():
 
 
 class Bomb(SketchedObjects):
-    def __init__(self, location, bombPoints, realPoints, radius, explosionRadius):
+    def __init__(self, location, bombPoints, realPoints,
+                 radius, explosionRadius):
         SketchedObjects.__init__(self, location)
         self.explosionRadius = explosionRadius
         self.bombPoints = bombPoints
@@ -83,7 +92,7 @@ class Bomb(SketchedObjects):
     def draw(self):
         pygame.draw.circle(screen, self.colour, self.bombPoints, self.radius, 0)
 
-    def explode(self, enemyList, obstacles, player):
+    def explode(self, enemyList, obstacles, player, dragon):
         explosion = BombExplosion(self.realPoints, self.explosionRadius)
         # kills both enemies and player
         for enemy in enemyList:
@@ -91,6 +100,8 @@ class Bomb(SketchedObjects):
                 enemy.health -= 5
         if pygame.sprite.collide_rect(explosion, player):
             player.health -= 5
+        if pygame.sprite.collide_rect(explosion, dragon):
+            dragon.health -= 1  # dragon is sort of immune to bombs
         # destroys obstacles
         for obstacle in obstacles:
             if pygame.sprite.collide_rect(explosion, obstacle):
@@ -132,7 +143,8 @@ class Block(pygame.sprite.Sprite):
                     self.destroyed = True
                 elif isinstance(enemy, BlueBlob) and len(enemy.bullets) >= 1:
                         for bullet in enemy.bullets:
-                            if bullet.gameState == gameState and pygame.sprite.collide_rect(self, bullet):
+                            if bullet.gameState == gameState and\
+                                    pygame.sprite.collide_rect(self, bullet):
                                 self.destroyed = True
                                 try:
                                     enemy.bullets.remove(bullet)
