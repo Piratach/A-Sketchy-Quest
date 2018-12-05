@@ -470,11 +470,29 @@ class RedBlob(CharSprites):
                 self.velocityX = -self.velocityX
             self.rect.left += self.velocityX
 
-    def checkCollision(self, block):
-        if pygame.sprite.collide_rect(self, block):
-            self.blocked = True
+    def checkCollision(self, block, obstacles=[]):
+        if obstacles != []:
+            for obstacle in obstacles:
+                if not obstacle.destroyed:
+                    if pygame.sprite.collide_rect(self, obstacle):
+                        self.blocked = True
+                        break
+                    else:
+                        if not block.destroyed and \
+                           pygame.sprite.collide_rect(self, block):
+                            self.blocked = True
+                            break
+                        self.blocked = False
+                else:
+                    if pygame.sprite.collide_rect(self, block):
+                        self.blocked = True
+                    else:
+                        self.blocked = False
         else:
-            self.blocked = False
+            if pygame.sprite.collide_rect(self, block):
+                self.blocked = True
+            else:
+                self.blocked = False
 
 
 class BlueBlob(RedBlob):
@@ -491,6 +509,7 @@ class BlueBlob(RedBlob):
         self.time = 100
         self.bullets = pygame.sprite.Group()
         self.rect.center = location
+        self.tempCenterY = location[1]
         self.left = True
         self.right = False
         self.health = 5
@@ -507,7 +526,7 @@ class BlueBlob(RedBlob):
                 self.right = False
                 bullet = Projectile(self.bulletVelocity,
                                     (self.rect.center[0],
-                                     self.rect.center[1] + 50))
+                                     self.tempCenterY + 50))
                 self.bullets.add(bullet)
                 self.time = 100
             elif pygame.sprite.collide_rect(self.detection, player) and\
@@ -516,7 +535,7 @@ class BlueBlob(RedBlob):
                 self.right = True
                 bullet = Projectile(-self.bulletVelocity,
                                     (self.rect.center[0],
-                                     self.rect.center[1] + 50))
+                                     self.tempCenterY + 50))
                 self.bullets.add(bullet)
                 self.time = 100
 

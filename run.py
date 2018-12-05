@@ -116,23 +116,22 @@ def saveStage():
     f.write("#blueblobs\n")
     for monster in monstersAdded:
         if isinstance(monster, BlueBlob):
-            f.write(str([monster.rect.center, monster.radius,
+            f.write(str([(monster.rect.center[0], 555), monster.radius,
                          monster.bulletVelocity, "play stage"]) + "\n")
     f.write("#redblobs\n")
     for monster in monstersAdded:
         if not isinstance(monster, BlueBlob):
-            f.write(str([(monster.rect.left, monster.rect.top), monster.radius,
-                          monster.velocity, "play stage"]) + "\n")
+            f.write(str([(monster.rect.left, 499), monster.radius,
+                        monster.velocityX, "play stage"]) + "\n")
     f.close()
 
 
-def overwriteFiles():
-    f = open("saveState.txt", "w")
-    for line in f:
-        if line != "asdf":
-            f.write("#")
-    f.close()
-
+def overwrite(filename):
+    if filename == "highscore.txt":
+        f = open(filename, "w")
+        for i in range(4):
+            f.write("0\n")
+        f.close()
 
 def convertToLst(s):
     # used to convert the strings in .txt files back to list
@@ -159,7 +158,9 @@ def convertToTuple(s):
         if letters in string.digits:
             newItem += letters
     item1 = newItem
-    return int(item1), int(item2[1:-2])
+    if item2[-2:-1] == ")":
+        item2 = item2[:-1]
+    return int(item1), int(item2[1:-1])
 
 
 class SketchyQuest(PygameGame):
@@ -346,10 +347,16 @@ class SketchyQuest(PygameGame):
                     self.block = Block((-1, -1), (-1, -1))
 
         elif self.gameState == "high scores":
-            self.title22 = True
-            self.gameState = "start"
+            if 890 <= x < 1005 and 695 <= y < 755:
+                overwrite("highscore.txt")
+            else:
+                self.title22 = True
+                self.gameState = "start"
         # stage editor
         elif self.gameState == "edit stage":
+            # print("Pen Down: ", self.penDown)
+            # print("Monster 2 Held: ", self.monster2Held)
+            # print("Monster 1 Held: ", self.monster1Held)
             # red blob
             if not self.monster2Held and 4 <= x < 131 and 2 <= y < 131:
                 self.monster1pos = (x, y)
@@ -368,7 +375,7 @@ class SketchyQuest(PygameGame):
                 obstaclesAdded.empty()
                 monstersAdded.empty()
             # exit!
-            elif not self.penDown and not self.monster2Held and \
+            elif not self.monster2Held and \
                     not self.monster1Held and 9 <= x < 109 and 700 <= y < 750:
                 obstaclesAdded.empty()
                 monstersAdded.empty()
@@ -453,6 +460,7 @@ class SketchyQuest(PygameGame):
                 self.tempPoints = []
 
         elif self.gameState == "edit stage":
+            self.penDown = False
             if not self.monster1Held and not self.monster2Held and \
                     len(self.tempPoints) >= 40 \
                     and self.tempPoints[0][1] <= 250:
@@ -463,40 +471,46 @@ class SketchyQuest(PygameGame):
                                    )
                 obstaclesAdded.add(rubble)
                 self.tempPoints = []
-                self.penDown = False
             else:
                 self.tempPoints = []
             if self.monster1Held:
                 self.monster1Held = False
-                radius = random.randint(200,
-                                        int(self.gameScreenLen / 3))
-                velocity = random.randint(-20, 20)
-                try:
-                    monster1 = RedBlob("monster1?.png", (self.monster1pos[0]
-                                                         + self.scrollX,
-                                                         self.monster1pos[1]
-                                                         + 10),
-                                       radius, "edit stage", velocity)
-                    monstersAdded.add(monster1)
-                except:
-                    pass
-                self.monster1pos = (20, 10)
-                self.penDown = False
+                if 4 <= self.monster1pos[0] < 131 and \
+                   2 <= self.monster1pos[1] < 131:
+                    self.monster1pos = (20, 10)
+                else:
+                    radius = random.randint(200,
+                                            int(self.gameScreenLen / 3))
+                    velocity = random.randint(-10, 10)
+                    try:
+                        monster1 = RedBlob("monster1?.png", (self.monster1pos[0]
+                                                             + self.scrollX,
+                                                             self.monster1pos[1]
+                                                             + 10),
+                                           radius, velocity, "edit stage")
+                        monstersAdded.add(monster1)
+                        self.monster1pos = (20, 10)
+                    except:
+                        pass
             elif self.monster2Held:
                 self.monster2Held = False
-                radius = random.randint(200,
-                                        int(self.gameScreenLen / 4))
-                try:
-                    monster2 = BlueBlob("monster2.png", (self.monster2pos[0] +
-                                                         45 + self.scrollX,
-                                                         self.monster2pos[1] +
-                                                         45),
-                                        radius, 20, "edit stage")
-                    monstersAdded.add(monster2)
-                except:
-                    pass
-                self.monster2pos = (160, 10)
-                self.penDown = False
+                if 145 <= self.monster2pos[0] < 276 \
+                   and 2 <= self.monster2pos[1] < 131:
+                    self.monster2pos = (160, 10)
+                else:
+                    radius = random.randint(200,
+                                            int(self.gameScreenLen / 4))
+                    try:
+                        monster2 = BlueBlob("monster2.png", (self.monster2pos[0]
+                                                             + 45
+                                                             + self.scrollX,
+                                                             self.monster2pos[1]
+                                                             + 10),
+                                            radius, 20, "edit stage")
+                        monstersAdded.add(monster2)
+                    except:
+                        pass
+                    self.monster2pos = (160, 10)
 
     def keyPressed(self, currKey):
         # for title screen
@@ -579,6 +593,7 @@ class SketchyQuest(PygameGame):
             elif self.title31:
                 if currKey == "return":
                     self.gameState = "play stage"
+                    self.mainChar.stage = "play stage"
                     self.title31 = False
                 elif currKey == "s" or currKey == "down":
                     self.title31 = False
@@ -638,8 +653,11 @@ class SketchyQuest(PygameGame):
                     self.mainChar.attackState = True
                     self.mainChar.angle = 0
                     self.mainChar.weaponDown = False
-                    if self.gameState != "survival":
+                    if self.gameState != "survival" and \
+                            self.gameState != "play stage":
                         self.mainChar.attack(allMonsters, self.boss)
+                    elif self.gameState == "play stage":
+                        self.mainChar.attack(allMonsters2, self.boss)
                     else:
                         self.mainChar.attack(monstersSpawned, self.dragon)
                         if self.dragon.health == 0:
@@ -660,7 +678,7 @@ class SketchyQuest(PygameGame):
     def timerFired(self, dt):
         if self.gameState == "stage1" or \
                 self.gameState == "stage2" or self.gameState == "boss1" or \
-                self.gameState == "survival":
+                self.gameState == "survival" or self.gameState == "play stage":
             self.timerCalls += 1
             # bombs
             if self.bomb.fallen:
@@ -671,6 +689,11 @@ class SketchyQuest(PygameGame):
                     if self.gameState == "survival":
                         self.bomb.explode(monstersSpawned,
                                           obstaclesSpawned,
+                                          self.mainChar, self.dragon)
+                        self.exploded = True
+                    elif self.gameState == "play stage":
+                        self.bomb.explode(allMonsters2,
+                                          allObstacles2,
                                           self.mainChar, self.boss)
                         self.exploded = True
                     else:
@@ -686,7 +709,7 @@ class SketchyQuest(PygameGame):
                 for dudes in blueBlobs:
                     if dudes.alive:
                         dudes.fire(self.mainChar)  # sends out the projectiles
-            if self.gameState != "survival":
+            if self.gameState != "survival" and self.gameState != "play stage":
                 self.mainChar.update(allMonsters, self.boss.fire,
                                      self.boss, allObstacles,
                                      self.block, self.gameState)
@@ -785,6 +808,20 @@ class SketchyQuest(PygameGame):
                                                    self.mainChar):
                     if self.mainChar.health < 10:
                         self.mainChar.health += 1
+
+            # play stage
+            elif self.gameState == "play stage":
+                self.mainChar.update(allMonsters2, self.dragon.fire,
+                                     self.dragon, allObstacles2,
+                                     self.block, self.gameState)
+
+                # updating monsters
+                for monster in allMonsters2:
+                    if monster.alive and monster.rect.top == 499:
+                        monster.update()
+                        if isinstance(monster, BlueBlob):
+                            monster.tempCenterY = 499
+                            monster.fire(self.mainChar)
 
     def redrawAll(self, screen):
 
@@ -1205,20 +1242,32 @@ class SketchyQuest(PygameGame):
             for line in highScores:
                 allScores += [line[:-1]]
             screen.fill(white)
+            # title
             title = font2.render("High Scores!", False, black)
             screen.blit(title, (320, 20))
+
             totalKills = "Total Kills: " + str(allScores[0])
             displayTotalKills = font2.render(totalKills, False, black)
             screen.blit(displayTotalKills, (20, 160))
+
             redKills = "Red Blob Kills: " + str(allScores[1])
             displayRedKills = font2.render(redKills, False, black)
             screen.blit(displayRedKills, (20, 260))
+
             blueKills = "Blue Blob Kills: " + str(allScores[2])
             displayBlueKills = font2.render(blueKills, False, black)
             screen.blit(displayBlueKills, (20, 360))
+
             dragonKills = "Dragon Kills: " + str(allScores[3])
             displayDragonKills = font2.render(dragonKills, False, black)
             screen.blit(displayDragonKills, (20, 460))
+
+            f.close()
+
+            # reset button
+            pygame.draw.rect(screen, black, (895, 700, 105, 50), 5)
+            reset = font.render("Reset", False, black)
+            self.screen.blit(reset, (900, 703))
 
         elif self.gameState == "edit stage":
             pygame.Surface.blit(self.screen,
@@ -1245,6 +1294,7 @@ class SketchyQuest(PygameGame):
                                                        items[0], items[1],
                                                        items[2], items[3]))
                 self.music = 0
+
             # sketches
             if len(self.tempPoints) >= 2:
                 for i in range(len(self.tempPoints)):
@@ -1307,28 +1357,18 @@ class SketchyQuest(PygameGame):
                     else:
                         if lstCount == 1:
                             allObstacles2.add(Obstacles("rubble.png",
-                                                         convertToTuple(line)))
+                                                        convertToTuple(line)))
                         elif lstCount == 2:
                             items = convertToLst(line)
                             allMonsters2.add(BlueBlob("monster2.png",
-                                                       items[0], items[1],
-                                                       items[2], items[3]))
+                                                      items[0], items[1],
+                                                      items[2], "play stage"))
                         elif lstCount == 3:
                             items = convertToLst(line)
                             allMonsters2.add(RedBlob("monster1?.png",
-                                                      items[0], items[1],
-                                                      items[2], items[3]))
+                                                     items[0], items[1],
+                                                     items[2], "play stage"))
                 self.music = 0
-
-            # sketches
-            if len(self.tempPoints) >= 2:
-                for i in range(len(self.tempPoints)):
-                    if i == len(self.tempPoints) - 1:
-                        break
-                    # connecting lines together
-                    pygame.draw.lines(screen, black, True,
-                                      (self.tempPoints[i],
-                                       self.tempPoints[i + 1]), 6)
 
             # rubbles
             for obstacle in allObstacles2:
@@ -1336,20 +1376,49 @@ class SketchyQuest(PygameGame):
                     screen.blit(obstacle.image,
                                 (obstacle.rect.left - self.scrollX,
                                  obstacle.rect.top))
-                if obstacle.rect.top <= 210:
-                    obstacle.rect.top += gravity
-                else:
-                    obstacle.rect.top = 215
+                    if obstacle.rect.top <= 210:
+                        obstacle.rect.top += gravity
+                    else:
+                        obstacle.rect.top = 215
 
             # monsters
             for monster in allMonsters2:
-                self.screen.blit(monster.image,
-                                 (monster.rect.left - self.scrollX,
-                                  monster.rect.top))
-                if monster.rect.top < 499:
-                    monster.rect.top += gravity
+                if monster.alive:
+                    self.screen.blit(monster.image,
+                                     (monster.rect.left - self.scrollX,
+                                      monster.rect.top))
+                    if monster.alive and not isinstance(monster, BlueBlob):
+                        monster.checkCollision(self.block, allObstacles2)
+                        screen.blit(monster.image,
+                                    (monster.rect.left - self.scrollX,
+                                     monster.rect.top))
+                    elif monster.alive and isinstance(monster, BlueBlob):
+                        if monster.right and not monster.left:
+                            screen.blit(self.blueRight,
+                                        (monster.rect.left - self.scrollX,
+                                         monster.rect.top))
+                        else:
+                            screen.blit(monster.image,
+                                        (monster.rect.left - self.scrollX,
+                                         monster.rect.top))
+                    if isinstance(monster, BlueBlob) and \
+                            len(monster.bullets) >= 1:
+                        for bullet in monster.bullets:
+                            bullet.gameState = self.gameState
+                            bullet.update()
+                            screen.blit(bullet.image,
+                                        (bullet.rect.left - self.scrollX,
+                                         bullet.rect.top))
+                            try:
+                                if bullet.outOfBounds:
+                                    monster.bullets.remove(bullet)
+                            except:
+                                pass
                 else:
-                    monster.rect.top = 499
+                    try:
+                        allMonsters2.remove(monster)
+                    except:
+                        pass
 
             # sticks
             self.stick.update()
@@ -1392,10 +1461,25 @@ class SketchyQuest(PygameGame):
             displayHealth = font.render(health, False, (0, 0, 0))
             self.screen.blit(displayHealth, (self.screenWidth - 170, 0))
             if not self.mainChar.alive:
-                self.gameState = "dead"
+                self.gameState = "Game Over"
             if self.mainChar.attackState:
                 self.mainChar.attackAnimation()
             self.mainChar.charDisplay()
+
+            # sketches
+            if len(self.tempPoints) >= 2:
+                for i in range(len(self.tempPoints)):
+                    if i == len(self.tempPoints) - 1:
+                        break
+                    # connecting lines together
+                    pygame.draw.lines(screen, black, True,
+                                      (self.tempPoints[i],
+                                       self.tempPoints[i + 1]), 6)
+
+            # monsters left
+            monstersLeft = "Monsters Left: " + str(len(allMonsters2))
+            displayMonstersLeft = font.render(monstersLeft, False, (0, 0, 0))
+            self.screen.blit(displayMonstersLeft, (10, 0))
 
             # exit button
             pygame.draw.rect(screen, black, (9, 700, 100, 50), 8)
