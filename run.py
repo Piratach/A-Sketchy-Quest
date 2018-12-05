@@ -1,4 +1,4 @@
-import pygame, math, random
+import pygame, math, random, string
 
 from pygamegame import PygameGame
 from charSprites import Field, CharSprites, RedBlob, Obstacles, BlueBlob, Dragon
@@ -102,6 +102,60 @@ def withinBounds(tempPoints):
         if tempPoints[i][1] > 600:
             return False
     return True
+
+
+def saveStage():
+    f = open("saveState.txt", "w")
+    f.write("#obstacles\n")
+    for obstacle in obstaclesAdded:
+        f.write(str((obstacle.rect.left, obstacle.rect.top)) + "\n")
+    f.write("#blueblobs\n")
+    for monster in monstersAdded:
+        if isinstance(monster, BlueBlob):
+            f.write(str([monster.rect.center, monster.radius,
+                         monster.bulletVelocity, "play stage"]) + "\n")
+    f.write("#redblobs\n")
+    for monster in monstersAdded:
+        if not isinstance(monster, BlueBlob):
+            f.write(str([(monster.rect.left, monster.rect.top), monster.radius,
+                          monster.velocity, "play stage"]) + "\n")
+    f.close()
+
+
+def overwriteFiles():
+    f = open("saveState.txt", "w")
+    for line in f:
+        if line != "asdf":
+            f.write("#")
+    f.close()
+
+
+def convertToLst(s):
+    # used to convert the strings in .txt files back to list
+    lst = []
+    for stuff in s.split(","):
+        lst += [stuff]
+    item = lst[0] + "," + lst[1]
+    location = convertToTuple(item)
+    radius = int(lst[2])
+    velocity = int(lst[3])
+    stage = lst[4][:-2]  # ignore the ] and \n
+    return [location, radius, velocity, stage]
+
+
+def convertToTuple(s):
+    # used to convert strings in .txt files back into a tuple
+    lst = []
+    for stuff in s.split(","):
+        lst += [stuff]
+    item1 = lst[0]
+    item2 = lst[1]
+    newItem = ""
+    for letters in item1:
+        if letters in string.digits:
+            newItem += letters
+    item1 = newItem
+    return int(item1), int(item2[1:-2])
 
 
 class SketchyQuest(PygameGame):
@@ -280,7 +334,7 @@ class SketchyQuest(PygameGame):
             # save!
             elif not self.penDown and not self.monster2Held and \
                     not self.monster1Held and 557 <= x < 773 and 11 <= y < 121:
-                print("Saved!")
+                saveStage()
             # clear!
             elif not self.penDown and not self.monster2Held and \
                     not self.monster1Held and 779 <= x < 995 and 11 <= y < 121:
@@ -289,8 +343,13 @@ class SketchyQuest(PygameGame):
             # exit!
             elif not self.penDown and not self.monster2Held and \
                     not self.monster1Held and 9 <= x < 109 and 700 <= y < 750:
+                obstaclesAdded.empty()
+                monstersAdded.empty()
                 self.title32 = True
                 self.gameState = "start"
+                self.music = 1
+                self.mainChar.rect.left = 21
+                self.scrollX = 0
             else:
                 if not self.monster1Held and not self.monster2Held:
                     self.tempPoints += [(x, y)]
@@ -366,10 +425,9 @@ class SketchyQuest(PygameGame):
                 self.tempPoints = []
 
         elif self.gameState == "edit stage":
-            print(len(self.tempPoints))
             if not self.monster1Held and not self.monster2Held and \
                     len(self.tempPoints) >= 40 \
-                    and self.tempPoints[0][1] <= 200:
+                    and self.tempPoints[0][1] <= 250:
                 rubble = Obstacles("rubble.png",
                                    (self.tempPoints[0][0]
                                     - 300 + self.scrollX,  # to offset rect.left
@@ -405,7 +463,7 @@ class SketchyQuest(PygameGame):
                                                          45 + self.scrollX,
                                                          self.monster2pos[1] +
                                                          45),
-                                        radius, "edit stage", 20)
+                                        radius, 20, "edit stage")
                     monstersAdded.add(monster2)
                 except:
                     pass
@@ -724,9 +782,9 @@ class SketchyQuest(PygameGame):
         # music
         if self.gameState == "start":
             if self.music == 0:
-                # pygame.mixer.music.load("titleTheme.wav")
+                pygame.mixer.music.load("titleTheme.wav")
                 # from wii sports resort
-                # pygame.mixer.music.play(-1)
+                pygame.mixer.music.play(-1)
                 self.music = 1
 
         # game screen
@@ -1137,6 +1195,27 @@ class SketchyQuest(PygameGame):
             pygame.Surface.blit(self.screen,
                                 self.stageBuildScreen, (0 - self.scrollX, 0))
 
+            if self.music == 1:
+                lstCount = 0
+                f = open("saveState.txt", "r")
+                for line in f:
+                    if line.startswith("#"):
+                        lstCount += 1
+                    else:
+                        if lstCount == 1:
+                            obstaclesAdded.add(Obstacles("rubble.png",
+                                                         convertToTuple(line)))
+                        elif lstCount == 2:
+                            items = convertToLst(line)
+                            monstersAdded.add(BlueBlob("monster2.png",
+                                                      items[0], items[1],
+                                                      items[2], items[3]))
+                        elif lstCount == 3:
+                            items = convertToLst(line)
+                            monstersAdded.add(RedBlob("monster1?.png",
+                                                       items[0], items[1],
+                                                       items[2], items[3]))
+                self.music = 0
             # sketches
             if len(self.tempPoints) >= 2:
                 for i in range(len(self.tempPoints)):
@@ -1183,8 +1262,8 @@ class SketchyQuest(PygameGame):
             # exit button
             pygame.draw.rect(screen, black, (9, 700, 100, 50), 8)
             self.screen.fill(white, (9, 700, 100, 50))
-            exit = font.render("Exit", False, black)
-            self.screen.blit(exit, (27, 703))
+            exitGame = font.render("Exit", False, black)
+            self.screen.blit(exitGame, (27, 703))
 
 
 # creating and running the game
