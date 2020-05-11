@@ -85,7 +85,7 @@ class Bomb(SketchedObjects):
         self.realPoints = realPoints
         self.radius = radius
         self.fuse = 0
-        self.explosion = pygame.image.load("boom!.png")
+        self.explosion = pygame.image.load("sprites/boom!.png")
         self.explosionRect = self.explosion.get_rect()
         self.colour = black
 

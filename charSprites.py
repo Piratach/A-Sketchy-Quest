@@ -549,8 +549,8 @@ class Dragon(pygame.sprite.Sprite):
     def __init__(self, fileName, location, gameState):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.image.load(fileName)
-        self.imageRight = pygame.image.load("dragon right.png")
-        self.imageLeft = pygame.image.load("dragon.png")
+        self.imageRight = pygame.image.load("sprites/dragon_right.png")
+        self.imageLeft = pygame.image.load("sprites/dragon.png")
         self.rect = self.image.get_rect()
         self.rect.left, self.rect.top = location
         self.mask = pygame.mask.from_surface(self.image)
@@ -572,8 +572,8 @@ class Dragon(pygame.sprite.Sprite):
         # attack
         self.attacking = False
         self.attackCD = 100
-        self.attackStance = pygame.image.load("dragonfire.png")
-        self.attackStanceR = pygame.image.load("dragonfire right.png")
+        self.attackStance = pygame.image.load("sprites/dragonfire.png")
+        self.attackStanceR = pygame.image.load("sprites/dragonfire_right.png")
         self.fire = Fire(0, (0, 0), self.right, self.gameState)
         self.fired = False
         self.fireLeft = 0

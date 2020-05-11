@@ -109,7 +109,7 @@ def withinBounds(tempPoints):
 
 
 def saveStage():
-    f = open("saveState.txt", "w")
+    f = open("states/saveState.txt", "w")
     f.write("#obstacles\n")
     for obstacle in obstaclesAdded:
         f.write(str((obstacle.rect.left, obstacle.rect.top)) + "\n")
@@ -127,7 +127,7 @@ def saveStage():
 
 
 def overwrite(filename):
-    if filename == "highscore.txt":
+    if filename == "states/highscore.txt":
         f = open(filename, "w")
         for i in range(4):
             f.write("0\n")
@@ -179,48 +179,48 @@ class SketchyQuest(PygameGame):
         self.tempPoints = []  # shows sketch
         self.scrollX = 0
         self.scrollSpeed = 0
-        self.rubble = Obstacles("rubble.png", (11000, 210))
+        self.rubble = Obstacles("sprites/rubble.png", (11000, 210))
         allObstacles.add(self.rubble)
 
         # main character
         self.ground = 465
-        self.mainChar = CharSprites("characterDude(COLOURED).png",
+        self.mainChar = CharSprites("sprites/main_character.png",
                                     (21, self.ground))
 
         # monsterA - can only move around
         # stage 1
-        self.redblob1 = RedBlob("monster1?.png",
+        self.redblob1 = RedBlob("sprites/monster1.png",
                                 (2000, 499), 600, -5, "stage1")
-        self.redblob2 = RedBlob("monster1?.png",
+        self.redblob2 = RedBlob("sprites/monster1.png",
                                 (4000, 499), 600, 5, "stage1")
-        self.redblob3 = RedBlob("monster1?.png",
+        self.redblob3 = RedBlob("sprites/monster1.png",
                                 (6000, 499), 600, 10, "stage1")
-        self.redblob4 = RedBlob("monster1?.png",
+        self.redblob4 = RedBlob("sprites/monster1.png",
                                 (9000, 499), 600, 10, "stage1")
 
         # stage 2
-        self.redblob5 = RedBlob("monster1?.png",
+        self.redblob5 = RedBlob("sprites/monster1.png",
                                 (2000, 499), 600, -10, "stage2")
-        self.redblob6 = RedBlob("monster1?.png",
+        self.redblob6 = RedBlob("sprites/monster1.png",
                                 (4000, 499), 600, 10, "stage2")
         allMonsters.add(self.redblob1, self.redblob2,
                         self.redblob3, self.redblob4,
                         self.redblob5, self.redblob6)
 
         # monsterB - can attack with projectiles
-        self.blueRight = pygame.image.load("monster2a.png")
+        self.blueRight = pygame.image.load("sprites/monster2a.png")
         # stage 1
-        self.blueblob1 = BlueBlob("monster2.png",
+        self.blueblob1 = BlueBlob("sprites/monster2.png",
                                   (5000, 499), 1500, 25, "stage1")
-        self.blueblob2 = BlueBlob("monster2.png",
+        self.blueblob2 = BlueBlob("sprites/monster2.png",
                                   (8000, 499), 2000, 30, "stage1")
-        self.blueblob3 = BlueBlob("monster2.png",
+        self.blueblob3 = BlueBlob("sprites/monster2.png",
                                   (9500, 499), 1500, 30, "stage1")
 
         # stage 2
-        self.blueblob4 = BlueBlob("monster2.png",
+        self.blueblob4 = BlueBlob("sprites/monster2.png",
                                   (5000, 499), 1500, 30, "stage2")
-        self.blueblob5 = BlueBlob("monster2.png",
+        self.blueblob5 = BlueBlob("sprites/monster2.png",
                                   (7000, 499), 1500, 35, "stage2")
         blueBlobs.add(self.blueblob1, self.blueblob2, self.blueblob3,
                       self.blueblob4, self.blueblob5)
@@ -228,7 +228,7 @@ class SketchyQuest(PygameGame):
                         self.blueblob4, self.blueblob5)
 
         # boss - can breathe fire
-        self.boss = Dragon("dragon.png", (550, 0), "boss1")
+        self.boss = Dragon("sprites/dragon.png", (550, 0), "boss1")
         # image from mega man
 
         # sticks
@@ -259,43 +259,43 @@ class SketchyQuest(PygameGame):
         self.title31 = False
         self.title32 = False
         self.title33 = False # back button
-        self.titleScreen = pygame.image.load("aSketchyQuestTitleScreen.png")
+        self.titleScreen = pygame.image.load("stages/aSketchyQuestTitleScreen.png")
         self.titleScreenRect = self.titleScreen.get_rect()
-        self.titleScreen2 = pygame.image.load("aSketchyQuestTitleScreen2.png")
+        self.titleScreen2 = pygame.image.load("stages/aSketchyQuestTitleScreen2.png")
         self.titleScreen2Rect = self.titleScreen.get_rect()
-        self.titleScreen21 = pygame.image.load("aSketchyQuestTitleScreen21.png")
+        self.titleScreen21 = pygame.image.load("stages/aSketchyQuestTitleScreen21.png")
         self.titleScreen21Rect = self.titleScreen.get_rect()
-        self.titleScreen22 = pygame.image.load("aSketchyQuestTitleScreen22.png")
+        self.titleScreen22 = pygame.image.load("stages/aSketchyQuestTitleScreen22.png")
         self.titleScreen22Rect = self.titleScreen.get_rect()
-        self.titleScreen23 = pygame.image.load("aSketchyQuestTitleScreen23.png")
+        self.titleScreen23 = pygame.image.load("stages/aSketchyQuestTitleScreen23.png")
         self.titleScreen23Rect = self.titleScreen.get_rect()
-        self.titleScreen3 = pygame.image.load("aSketchyQuestTitleScreen3.png")
+        self.titleScreen3 = pygame.image.load("stages/aSketchyQuestTitleScreen3.png")
         self.titleScreen3Rect = self.titleScreen.get_rect()
-        self.titleScreen31 = pygame.image.load("aSketchyQuestTitleScreen31.png")
+        self.titleScreen31 = pygame.image.load("stages/aSketchyQuestTitleScreen31.png")
         self.titleScreen31Rect = self.titleScreen.get_rect()
-        self.titleScreen32 = pygame.image.load("aSketchyQuestTitleScreen32.png")
+        self.titleScreen32 = pygame.image.load("stages/aSketchyQuestTitleScreen32.png")
         self.titleScreen32Rect = self.titleScreen.get_rect()
-        self.titleScreen33 = pygame.image.load("aSketchyQuestTitleScreen33.png")
+        self.titleScreen33 = pygame.image.load("stages/aSketchyQuestTitleScreen33.png")
         self.titleScreen33Rect = self.titleScreen.get_rect()
 
         # game states
-        self.gameScreen = pygame.image.load("stage1.png")
+        self.gameScreen = pygame.image.load("stages/stage1.png")
         self.gameScreenRect = self.gameScreen.get_rect()
         self.gameScreenLen = 12026
-        self.stage2Screen = pygame.image.load("stage2.png")
+        self.stage2Screen = pygame.image.load("stages/stage2.png")
         self.stage2ScreenRect = self.gameScreenRect
-        self.bossScreen = pygame.image.load("BossStage.png")
+        self.bossScreen = pygame.image.load("stages/BossStage.png")
         self.bossScreenRect = self.bossScreen.get_rect()
 
         # credits
         self.credits = False
-        self.creditsScreen = pygame.image.load("credits.png")
+        self.creditsScreen = pygame.image.load("stages/credits.png")
         self.creditsScreenRect = self.creditsScreen.get_rect()
 
         # survival
-        self.survivalScreen = pygame.image.load("survival.png")
+        self.survivalScreen = pygame.image.load("stages/survival.png")
         self.survivalScreenRect = self.survivalScreen.get_rect()
-        self.dragon = Dragon("dragon.png", (2000, 0), "survival")
+        self.dragon = Dragon("sprites/dragon.png", (2000, 0), "survival")
         self.monstersKilled = 0
         self.overlapCount = 0
         self.redKills = 0
@@ -305,18 +305,18 @@ class SketchyQuest(PygameGame):
         self.healZone = Field(8000, (self.gameScreenLen/2, 465))
 
         # stage builder
-        self.stageBuildScreen = pygame.image.load("stage builder.png")
+        self.stageBuildScreen = pygame.image.load("stages/stage_builder.png")
         self.stageBuildScreenRect = self.stageBuildScreen.get_rect()
-        self.monster1 = pygame.image.load("monster1?.png")
+        self.monster1 = pygame.image.load("sprites/monster1.png")
         self.monster1pos = (20, 10)
         self.monster1Held = False
-        self.monster2 = pygame.image.load("monster2.png")
+        self.monster2 = pygame.image.load("sprites/monster2.png")
         self.monster2pos = (160, 10)
         self.monster2Held = False
         self.penDown = False
 
         # game over state
-        self.gameOverScreen = pygame.image.load("Game Over!!.png")
+        self.gameOverScreen = pygame.image.load("stages/game_over.png")
         self.gameOverScreenRect = self.gameOverScreen.get_rect()
 
     def mousePressed(self, x, y):
@@ -348,7 +348,7 @@ class SketchyQuest(PygameGame):
 
         elif self.gameState == "high scores":
             if 890 <= x < 1005 and 695 <= y < 755:
-                overwrite("highscore.txt")
+                overwrite("states/highscore.txt")
             else:
                 self.title22 = True
                 self.gameState = "start"
@@ -464,7 +464,7 @@ class SketchyQuest(PygameGame):
             if not self.monster1Held and not self.monster2Held and \
                     len(self.tempPoints) >= 40 \
                     and self.tempPoints[0][1] <= 250:
-                rubble = Obstacles("rubble.png",
+                rubble = Obstacles("sprites/rubble.png",
                                    (self.tempPoints[0][0]
                                     - 300 + self.scrollX,  # to offset rect.left
                                     self.tempPoints[0][1])
@@ -483,7 +483,7 @@ class SketchyQuest(PygameGame):
                                             int(self.gameScreenLen / 3))
                     velocity = random.randint(-10, 10)
                     try:
-                        monster1 = RedBlob("monster1?.png", (self.monster1pos[0]
+                        monster1 = RedBlob("sprites/monster1.png", (self.monster1pos[0]
                                                              + self.scrollX,
                                                              self.monster1pos[1]
                                                              + 10),
@@ -501,7 +501,7 @@ class SketchyQuest(PygameGame):
                     radius = random.randint(200,
                                             int(self.gameScreenLen / 4))
                     try:
-                        monster2 = BlueBlob("monster2.png", (self.monster2pos[0]
+                        monster2 = BlueBlob("sprites/monster2.png", (self.monster2pos[0]
                                                              + 45
                                                              + self.scrollX,
                                                              self.monster2pos[1]
@@ -758,7 +758,7 @@ class SketchyQuest(PygameGame):
                     if tempV >= self.mainChar.velocityX:
                         tempV = self.mainChar.velocityX - 1
                     velocity = random.choice([str(-tempV), str(tempV)])
-                    monster = RedBlob("monster1?.png", (location, 499), radius,
+                    monster = RedBlob("sprites/monster1.png", (location, 499), radius,
                                       int(velocity), "survival")
                     monstersSpawned.add(monster)
 
@@ -777,7 +777,7 @@ class SketchyQuest(PygameGame):
                                                self.gameScreenLen - 200)
                     radius = 1500 + int(10 * self.monstersKilled)
                     velocity = 20 + int(0.4 * self.monstersKilled)
-                    monster2 = BlueBlob("monster2.png", (location, 499), radius,
+                    monster2 = BlueBlob("sprites/monster2.png", (location, 499), radius,
                                         int(velocity), "survival")
                     monstersSpawned.add(monster2)
 
@@ -789,10 +789,10 @@ class SketchyQuest(PygameGame):
                     location = self.mainChar.rect.left + 400
                     if location >= self.gameScreenLen:
                         location = self.mainChar.rect.left - 400
-                        self.dragon = Dragon("dragon.png", (location, 0),
+                        self.dragon = Dragon("sprites/dragon.png", (location, 0),
                                              self.gameState)
                     else:
-                        self.dragon = Dragon("dragon right.png", (location, 0),
+                        self.dragon = Dragon("sprites/dragon_right.png", (location, 0),
                                              self.gameState)
 
                 if self.dragon.alive:
@@ -1222,10 +1222,10 @@ class SketchyQuest(PygameGame):
             screen.blit(thanks, (20, 420))
             allScores = [self.monstersKilled, self.redKills,
                          self.blueKills, self.dragonKills]
-            f = open("highscore.txt", "r")
+            f = open("states/highscore.txt", "r")
             highScores = f.readlines()
             f.close()
-            f = open("highscore.txt", "w")
+            f = open("states/highscore.txt", "w")
             count = 0
             for line in highScores:
                 if allScores[count] >= int(line[:-1]):
@@ -1236,7 +1236,7 @@ class SketchyQuest(PygameGame):
             f.close()
 
         elif self.gameState == "high scores":
-            f = open("highscore.txt", "r")
+            f = open("states/highscore.txt", "r")
             highScores = f.readlines()
             allScores = []
             for line in highScores:
@@ -1275,22 +1275,22 @@ class SketchyQuest(PygameGame):
 
             if self.music == 1:
                 lstCount = 0
-                f = open("saveState.txt", "r")
+                f = open("states/saveState.txt", "r")
                 for line in f:
                     if line.startswith("#"):
                         lstCount += 1
                     else:
                         if lstCount == 1:
-                            obstaclesAdded.add(Obstacles("rubble.png",
+                            obstaclesAdded.add(Obstacles("sprites/rubble.png",
                                                          convertToTuple(line)))
                         elif lstCount == 2:
                             items = convertToLst(line)
-                            monstersAdded.add(BlueBlob("monster2.png",
+                            monstersAdded.add(BlueBlob("sprites/monster2.png",
                                                       items[0], items[1],
                                                       items[2], items[3]))
                         elif lstCount == 3:
                             items = convertToLst(line)
-                            monstersAdded.add(RedBlob("monster1?.png",
+                            monstersAdded.add(RedBlob("sprites/monster1.png",
                                                        items[0], items[1],
                                                        items[2], items[3]))
                 self.music = 0
@@ -1350,22 +1350,22 @@ class SketchyQuest(PygameGame):
 
             if self.music == 1:
                 lstCount = 0
-                f = open("saveState.txt", "r")
+                f = open("states/saveState.txt", "r")
                 for line in f:
                     if line.startswith("#"):
                         lstCount += 1
                     else:
                         if lstCount == 1:
-                            allObstacles2.add(Obstacles("rubble.png",
+                            allObstacles2.add(Obstacles("sprites/rubble.png",
                                                         convertToTuple(line)))
                         elif lstCount == 2:
                             items = convertToLst(line)
-                            allMonsters2.add(BlueBlob("monster2.png",
+                            allMonsters2.add(BlueBlob("sprites/monster2.png",
                                                       items[0], items[1],
                                                       items[2], "play stage"))
                         elif lstCount == 3:
                             items = convertToLst(line)
-                            allMonsters2.add(RedBlob("monster1?.png",
+                            allMonsters2.add(RedBlob("sprites/monster1.png",
                                                      items[0], items[1],
                                                      items[2], "play stage"))
                 self.music = 0
