@@ -1,8 +1,8 @@
 import pygame, math, random, string
 
-from pygamegame import PygameGame
-from charSprites import Field, CharSprites, RedBlob, Obstacles, BlueBlob, Dragon
-from SketchedObjects import Stick, Bomb, Block
+from scripts.pygamegame import PygameGame
+from scripts.sketchedObjects import Stick, Bomb, Block
+from scripts.charSprites import Field, CharSprites, RedBlob, Obstacles, BlueBlob, Dragon
 
 size = width, height = 1024, 768
 screen = pygame.display.set_mode(size)  # my surface

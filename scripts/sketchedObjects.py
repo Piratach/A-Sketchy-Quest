@@ -1,5 +1,5 @@
 import pygame
-from charSprites import BlueBlob
+from .charSprites import BlueBlob
 
 size = width, height = 1024, 768
 screen = pygame.display.set_mode(size)
