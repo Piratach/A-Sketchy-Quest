@@ -848,9 +848,9 @@ class SketchyQuest(PygameGame):
         # music
         if self.gameState == "start":
             if self.music == 0:
-                pygame.mixer.music.load("titleTheme.wav")
+                # pygame.mixer.music.load("titleTheme.wav")
                 # from wii sports resort
-                pygame.mixer.music.play(-1)
+                # pygame.mixer.music.play(-1)
                 self.music = 1
 
         # game screen
@@ -860,8 +860,8 @@ class SketchyQuest(PygameGame):
             # music
             if self.gameState == "stage1" and self.music == 1:
                 self.mainChar.stage = "stage1"
-                pygame.mixer.music.load("kirby.wav")  # from kirby
-                pygame.mixer.music.play(-1)
+                # pygame.mixer.music.load("kirby.wav")  # from kirby
+                # pygame.mixer.music.play(-1)
                 self.music = 2
 
             # music + init again
@@ -887,8 +887,8 @@ class SketchyQuest(PygameGame):
                 # other stuff
                 self.colour = white
                 self.scrollX = 0
-                pygame.mixer.music.load("stage2.wav")  # from final fantasy VI
-                pygame.mixer.music.play(-1)
+                # pygame.mixer.music.load("stage2.wav")  # from final fantasy VI
+                # pygame.mixer.music.play(-1)
                 self.music = 3
 
             if self.gameState == "boss1" and self.music == 3:
@@ -906,9 +906,9 @@ class SketchyQuest(PygameGame):
 
                 self.colour = black
                 self.scrollX = 0
-                pygame.mixer.music.load("Boss Theme.wav")
+                # pygame.mixer.music.load("Boss Theme.wav")
                 # from final fantasy VII
-                pygame.mixer.music.play(-1)
+                # pygame.mixer.music.play(-1)
                 self.music = 4
 
             if self.gameState == "stage1":
@@ -970,9 +970,9 @@ class SketchyQuest(PygameGame):
                     screen.blit(self.boss.attackStance, self.boss.rect)
                 elif not self.boss.alive and self.music == 4:
                     self.music = 6
-                    pygame.mixer.music.load("victory!.wav")
+                    # pygame.mixer.music.load("victory!.wav")
                     # from Dragon Quest VIII
-                    pygame.mixer.music.play(1)
+                    # pygame.mixer.music.play(1)
                     self.credits = True
 
             # sketches
@@ -1048,9 +1048,9 @@ class SketchyQuest(PygameGame):
                         # -480 for correct timing!!
                         self.gameState = "credits"
                     if self.music == 6:
-                        pygame.mixer.music.load("credits.wav")
+                        # pygame.mixer.music.load("credits.wav")
                         # from final fantasy III
-                        pygame.mixer.music.play(1)
+                        # pygame.mixer.music.play(1)
                         self.music = 7
 
         elif self.gameState == "credits":
@@ -1058,8 +1058,8 @@ class SketchyQuest(PygameGame):
 
         elif self.gameState == "Game Over":
             if self.music <= 4:
-                pygame.mixer.music.load("Game Over.wav")  # from mario
-                pygame.mixer.music.play(0)
+                # pygame.mixer.music.load("Game Over.wav")  # from mario
+                # pygame.mixer.music.play(0)
                 self.music = 5
             self.screen.blit(self.gameOverScreen, self.gameOverScreenRect)
 
