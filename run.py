@@ -32,17 +32,14 @@ pygame.mixer.init(48000, -16, 1, 1024)
 
 # please play with music!!
 
-
 font = pygame.font.SysFont("arial", 36)
 font2 = pygame.font.SysFont("arial", 72)
-
 
 pygame.init()
 
 
 def getDistance(point1, point2):
     return ((point1[0] - point2[0])**2 + (point1[1] - point2[1])**2)**0.5
-
 
 def isCircle(tempPoints):
     # check for
@@ -61,7 +58,6 @@ def isCircle(tempPoints):
                 # at least 10 such points must be close to one another
                 return [True, tempPoints[i]]
     return [False]
-
 
 def isCorner(tempPoints):
     # this function doesn't actually count the number of corners
@@ -90,7 +86,6 @@ def isCorner(tempPoints):
                     pass
     return numCorner
 
-
 def isBlock(tempPoints):
     if len(tempPoints) < 20:
         return [False]
@@ -100,13 +95,11 @@ def isBlock(tempPoints):
         # tempPoints[0], (tempPoints[0] + 100, tempPoints[1] + 300)]
         return [True, tempPoints[0]]
 
-
 def withinBounds(tempPoints):
     for i in range(len(tempPoints)):
         if tempPoints[i][1] > 600:
             return False
     return True
-
 
 def saveStage():
     f = open("states/saveState.txt", "w")
@@ -124,7 +117,6 @@ def saveStage():
             f.write(str([(monster.rect.left, 499), monster.radius,
                         monster.velocityX, "play stage"]) + "\n")
     f.close()
-
 
 def overwrite(filename):
     if filename == "states/highscore.txt":
@@ -145,7 +137,6 @@ def convertToLst(s):
     stage = lst[4][:-2]  # ignore the ] and \n
     return [location, radius, velocity, stage]
 
-
 def convertToTuple(s):
     # used to convert strings in .txt files back into a tuple
     lst = []
@@ -164,6 +155,7 @@ def convertToTuple(s):
 
 
 class SketchyQuest(PygameGame):
+
     def __init__(self):
         # screen
         self.title = "A Sketchy Quest"
@@ -319,10 +311,30 @@ class SketchyQuest(PygameGame):
         self.gameOverScreen = pygame.image.load("stages/game_over.png")
         self.gameOverScreenRect = self.gameOverScreen.get_rect()
 
+    # for resetting after game over
+    def reset(self):
+        allMonsters.empty()
+        allObstacles.empty()
+        self.__init__()
+        self.tempPoints = []
+
     def mousePressed(self, x, y):
         # no mousePressed is needed for title screen
         if self.gameState != "start" and self.gameState != "high scores" and \
                 self.gameState != "edit stage":
+
+            # exit button 
+            if self.gameState != "play stage":
+                if 9 <= x < 109 and 700 <= y < 750:
+                    if self.gameState == "survival":
+                        self.reset()
+                        self.title1 = False
+                        self.title21 = True
+                    else:
+                        self.reset()
+                    return
+
+            # drawing
             self.tempPoints += [(x, y)]
             if self.gameState == "play stage":
                 # exit!
@@ -456,6 +468,7 @@ class SketchyQuest(PygameGame):
 
                 except:
                     pass
+
             else:
                 self.tempPoints = []
 
@@ -467,8 +480,7 @@ class SketchyQuest(PygameGame):
                 rubble = Obstacles("sprites/rubble.png",
                                    (self.tempPoints[0][0]
                                     - 300 + self.scrollX,  # to offset rect.left
-                                    self.tempPoints[0][1])
-                                   )
+                                    self.tempPoints[0][1]))
                 obstaclesAdded.add(rubble)
                 self.tempPoints = []
             else:
@@ -623,6 +635,9 @@ class SketchyQuest(PygameGame):
             if currKey == "return":
                 self.gameState = "start"
                 self.title22 = True
+        elif self.gameState == "Game Over" or self.gameState == "dead":
+            if currKey == "r":
+                self.reset()
 
         # for the game screen
         elif self.gameState != "title" and self.gameState != "high scores" \
@@ -1053,6 +1068,13 @@ class SketchyQuest(PygameGame):
                         # pygame.mixer.music.play(1)
                         self.music = 7
 
+            # exit button
+            pygame.draw.rect(screen, black, (9, 700, 100, 50), 8)
+            self.screen.fill(white, (9, 700, 100, 50))
+            exitGame = font.render("Exit", False, black)
+            self.screen.blit(exitGame, (27, 703))
+
+
         elif self.gameState == "credits":
             self.screen.blit(self.creditsScreen, self.creditsScreenRect)
 
@@ -1203,6 +1225,11 @@ class SketchyQuest(PygameGame):
             if self.mainChar.attackState:
                 self.mainChar.attackAnimation()
             self.mainChar.charDisplay()
+
+            pygame.draw.rect(screen, black, (9, 700, 100, 50), 8)
+            self.screen.fill(white, (9, 700, 100, 50))
+            exitGame = font.render("Exit", False, black)
+            self.screen.blit(exitGame, (27, 703))
 
         elif self.gameState == "dead":
             screen.fill(black)
