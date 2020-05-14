@@ -1,5 +1,4 @@
-import pygame
-import math
+import pygame, math
 
 '''
 pygamegame.py
@@ -61,8 +60,13 @@ class PygameGame(object):
         pass
 
     def isKeyPressed(self, key):
-        ''' return whether a specific key is being held '''
+        # return whether a specific key is being held
         return self._keys.get(key, False)
+
+    def loading(self, TID):
+        # loading screen
+        # not yet implemented!
+        pass
 
     def __init__(self, width=600, height=400, fps=50, title="112 Pygame Game"):
         self.width = width
@@ -79,6 +83,10 @@ class PygameGame(object):
         self._keys = dict()
         # call game-specific initialization
         self.init()
+
+        # loading screen
+        # not yet implemented!
+
         playing = True
         while playing:
             time = clock.tick(self.fps)

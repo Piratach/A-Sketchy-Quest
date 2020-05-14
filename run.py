@@ -1,5 +1,4 @@
-import pygame, math, random, string
-
+import pygame, math, random, string 
 from scripts.pygamegame import PygameGame
 from scripts.sketchedObjects import Stick, Bomb, Block
 from scripts.charSprites import Field, CharSprites, RedBlob, Obstacles, BlueBlob, Dragon
@@ -689,6 +688,14 @@ class SketchyQuest(PygameGame):
                                 self.healZone = Field(0, (0, 0))
                             self.dragon.health = 5
                             self.dragon.alive = False
+
+    def loading(self, TID):
+        # not currently used...
+        self.screen.blit(self.titleScreen33, self.titleScreen33Rect)
+        time.sleep(2)
+        while (TID.is_alive()):
+            pass
+        return
 
     def timerFired(self, dt):
         if self.gameState == "stage1" or \
@@ -1513,11 +1520,9 @@ class SketchyQuest(PygameGame):
             self.screen.fill(white, (9, 700, 100, 50))
             exitGame = font.render("Exit", False, black)
             self.screen.blit(exitGame, (27, 703))
-
+        
 
 # creating and running the game
 game = SketchyQuest()
 game.run()
-
-
 
