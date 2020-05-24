@@ -1,6 +1,4 @@
 # A-Sketchy-Quest
-A 112 Project
-
 
 ![Title Screen](https://raw.githubusercontent.com/Piratach/A-Sketchy-Quest/master/stages/aSketchyQuestTitleScreen.png)
 
