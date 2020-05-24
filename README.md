@@ -4,7 +4,7 @@ A 112 Project
 
 ![Title Screen](https://raw.githubusercontent.com/Piratach/A-Sketchy-Quest/master/stages/aSketchyQuestTitleScreen.png)
 
-<ins>How the Game Works</ins>
+## How the Game Works
 1. Sketch various objects to fight monsters on your journey!
 ![Gameplay Demo](https://raw.githubusercontent.com/Piratach/A-Sketchy-Quest/master/demogifs/sketchDemo.gif)
 2. Create your own stage through the builder mode
@@ -14,7 +14,7 @@ A 112 Project
 
 https://www.youtube.com/watch?v=XIAKlRI48Rg
 
-<ins>Required Libraries</ins>
+## Required Libraries
 1. pygame  
 
 To play the game, first installed the required libraries, then run the file "run.py".
