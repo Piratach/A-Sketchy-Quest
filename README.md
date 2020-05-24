@@ -3,11 +3,11 @@
 ![Title Screen](https://raw.githubusercontent.com/Piratach/A-Sketchy-Quest/master/demogifs/title.png)
 
 ## How the Game Works
-1. Sketch various objects to fight monsters on your quest!
+1. Sketch various objects to fight monsters on your quest!  
 ![Gameplay Demo](https://raw.githubusercontent.com/Piratach/A-Sketchy-Quest/master/demogifs/sketchDemo.gif)
-2. Create your own stage through the builder mode
+2. Create your own stage through the builder mode  
 ![Builder Demo](https://raw.githubusercontent.com/Piratach/A-Sketchy-Quest/master/demogifs/builderDemo.gif)
-3. Set new records in survival mode
+3. Set new records in survival mode  
 ![Survival Demo](https://raw.githubusercontent.com/Piratach/A-Sketchy-Quest/master/demogifs/survivalDemo.gif)
 
 <ins>A Short Trailer</ins>
